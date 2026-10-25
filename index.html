@@ -237,6 +237,9 @@ body.previewing .gd-hud { top: calc(env(safe-area-inset-top, 0px) + 64px); }
 .gd-list { display: flex; gap: 10px; overflow-x: auto; padding: 4px 18px 8px; scrollbar-width: none; }
 .gd-list::-webkit-scrollbar { display: none; }
 .gd-list[hidden] { display: none; }
+.gd-collars { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
+.gd-collars .gd-chip { display: inline-flex; align-items: center; gap: 6px; }
+.gd-collars .gd-chip i { width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px rgb(0 0 0 / 0.15); }
 #garden .gd-item { flex: 0 0 86px; background: var(--gd-cream2); border-radius: 20px; padding: 6px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; position: relative; }
 .gd-item img { width: 68px; height: 68px; }
 .gd-item .nm { font-size: 12px; font-weight: 800; line-height: 1.15; text-align: center; }
@@ -656,7 +659,7 @@ body.previewing .screen .wrap > header { margin-top: 64px; }
   <nav class="gd-dock" aria-label="Garden tools">
     <button data-gd="plant"><img alt=""><span>Plant</span></button>
     <button data-gd="decor"><img alt=""><span>Decorate</span></button>
-    <button data-gd="friends"><img alt=""><span>Friends</span></button>
+    <button data-gd="friends"><img alt=""><span>Pets</span></button>
     <button data-gd="dress"><img alt=""><span>Dress up</span></button>
   </nav>
   <div class="gd-dress" id="gd-dress" role="dialog" aria-label="Dress up">
@@ -1346,7 +1349,7 @@ const FAMILIES = [
   { id: 'explorer', ic: 'compass', c: '#b07a12', t: 'Explorer', old: ['explorer'], m: ['gold'], v: (s) => usable(ALL_IDS).filter((id) => s.done.has(id)).length,
     at: [() => usable(ALL_IDS).length], d: () => 'Try every exercise at least once.' },
   { id: 'friends', ic: ['paw', 'house'], c: ['#8a5a3c', '#5aa3a0'], t: 'Good neighbour', names: ['Good neighbour', 'Good neighbour', 'Wildlife haven'], old: [null, 'friends3', 'friends8'],
-    v: (s) => s.friends, at: [1, 3, 8, 12, 16], d: (n) => (n === 1 ? 'A garden friend moves in.' : `${n} garden friends move in.`) },
+    v: (s) => s.friends, at: [1, 3, 8, 12, 16], d: (n) => (n === 1 ? 'A garden visitor becomes a regular.' : `${n} garden visitors become regulars.`) },
 ];
 const METALS = (n) => (n <= 3 ? ['bronze', 'silver', 'gold'].slice(0, n) : Array.from({ length: n }, (_, i) => (i < 2 ? 'bronze' : i < 4 ? 'silver' : 'gold')));
 const nth = (x, i) => (Array.isArray(x) ? x[Math.min(i, x.length - 1)] : x);
@@ -1718,9 +1721,10 @@ const DECOR = {
   carrots: { name: 'Carrot patch', a: 'A carrot patch', note: 'Rabbits come for a nibble. It goes in a bed.' }, bughotel: { name: 'Bug hotel', a: 'A bug hotel', note: 'Ladybirds crawl all over it.' },
   reeds: { name: 'Pond reeds', a: 'A clump of reeds', note: 'Dragonflies dart round them. Lovely in the pond.' }, duckhouse: { name: 'Duck house', a: 'A duck house', note: 'It floats on the pond. Ducks nap on it.' },
   mousehouse: { name: 'Mouse house', a: 'A tiny mouse house', note: 'A stump with a little red door.' }, owlbox: { name: 'Owl box', a: 'An owl box', note: 'High on a post, for a sleepy owl.' },
-  foxden: { name: 'Fox den', a: 'A fox den', note: 'A grassy mound to curl up by.' }, dogbowl: { name: 'Dog bowl and ball', a: 'A dog bowl and ball', note: 'A drink and a game for a visiting dog.' },
+  foxden: { name: 'Fox den', a: 'A fox den', note: 'A grassy mound to curl up by.' }, dogbowl: { name: 'Bowl and ball', a: 'A dog bowl and ball', note: 'A drink, and a ball to chase.' },
   // Upgrades: once a friend has its first thing, there is more to get for it (WILD[].more).
   kennel: { name: 'Kennel', a: 'A kennel', note: 'A snug wooden kennel with a red roof, for a nap in the shade.' },
+  dogbed: { name: 'Dog bed', a: 'A comfy dog bed', note: 'A big squashy cushion bed with a blanket, for a snooze in the sun.' },
   dogtoys: { name: 'Toy basket', a: 'A basket of dog toys', note: 'A ball, a rope and a squeaky bone to play with.' },
   koi: { name: 'Koi and lilies', a: 'Koi and water lilies', note: 'Orange and white koi swim round a lily pad the frog can sit on.' },
   cattree: { name: 'Cat tree', a: 'A cat tree', note: 'A scratching post with a cushion on top to snooze on.' },
@@ -1771,7 +1775,7 @@ const LEVELS = [
       { t: 'soil', x: -4.8, y: 9.4, w: 2.6, h: 1.3 }, { t: 'soil', x: 2.6, y: 11.3, w: 2.8, h: 1.3 }, { t: 'patio', x: -5.2, y: 11.2, w: 2.8, h: 1.6 }] },
 ];
 const REWARDS = [
-  [1, 'wateringcan'], [2, 'tulip'], [4, 'feeder'], [6, 'lavender'], [8, 'daffodil'], [10, 'grow'], [14, 'sunflower'], [15, 'bench'], [18, 'birdbath'],
+  [1, 'wateringcan'], [2, 'tulip'], [4, 'feeder'], [6, 'lavender'], [8, 'daffodil'], [10, 'grow'], [14, 'sunflower'], [15, 'bench'], [18, 'birdbath'], [20, 'pet:cat'],
   [22, 'rose'], [25, 'lantern'], [27, 'cornflower'], [30, 'gnome'], [33, 'area:allotment'], [35, 'foxglove'], [40, 'grow'], [45, 'logpile'], [50, 'bag'], [55, 'bluebell'], [60, 'poppy'],
   [70, 'beehive'], [75, 'hollyhock'], [80, 'grow'], [85, 'area:meadow'], [90, 'arch'], [100, 'magnolia'], [115, 'pots'], [130, 'birdhouse'], [150, 'grow'], [165, 'sundial'],
   [180, 'apple'], [200, 'cherry'], [225, 'fountain'], [250, 'grow'], [275, 'wheelbarrow'], [300, 'greenhouse'], [365, 'oak'],
@@ -1798,6 +1802,7 @@ const cap = (s) => s.replace(/^The /, '').replace(/^./, (x) => x.toUpperCase());
 function landmarkInfo(m) {
   // The chapter stones (once the garden sizes) and every 25 sessions after a year bring a bag of seeds.
   if (m.give.startsWith('area:')) { const a = AREAS[m.give.slice(5)]; return { title: a.name, sub: 'A new garden', text: `${a.note} Walk over the bridge from your garden.`, svg: emojiSVG(a.ic) }; }
+  if (m.give.startsWith('pet:')) { const id = m.give.slice(4); return { title: `Your ${WILD[id].name.toLowerCase()}`, sub: 'A new pet', text: WILD[id].arrives, svg: emojiSVG(WILD[id].ic) }; }
   if (m.give === 'grow' || m.give === 'bag') return { title: 'A bag of seeds', sub: `${BAG} seeds`, text: `${BAG} seeds to plant in your garden.`, svg: BAG_SVG };
   // Flowers and ornaments stay wrapped until she has opened them in her garden.
   if (!isOpen(m.give)) return { title: 'A present', sub: 'Something for your garden', text: 'Wrapped up until you get there. You open it in your garden.', svg: GIFT_SVG };
@@ -1823,7 +1828,7 @@ const atOf = (k) => (BASE_SP.includes(k) ? 0 : AT[k] ?? Infinity);
 const boughtEarly = (k) => bought().some((b) => b.k === 'sp:' + k || b.k === 'un:' + k);
 // Opening something early: seeds now instead of waiting for its stone. Flowers and ornaments come as a present.
 const earlyBought = (k) => bought().some((b) => b.k === 'early:' + k);
-const earlyPrice = (k) => (k.startsWith('area:') ? (atOf(k) < 50 ? 40 : 80) : (SP[k] ? 5 : 6) + Math.floor(atOf(k) / 5));
+const earlyPrice = (k) => (k.startsWith('pet:') ? 30 : k.startsWith('area:') ? (atOf(k) < 50 ? 40 : 80) : (SP[k] ? 5 : 6) + Math.floor(atOf(k) / 5));
 const alreadyBought = (r) => r.give !== 'bag' && r.give !== 'grow' && (boughtEarly(r.give) || earlyBought(r.give));
 const areaOpen = (a) => a === 'home' || atOf('area:' + a) <= total() || earlyBought('area:' + a);
 const isOpen = (k) => BASE_SP.includes(k) || boughtEarly(k) || friendBought(k) || (G().opened || []).includes(k) || (PREVIEW > 0 && atOf(k) <= total());
@@ -1840,10 +1845,12 @@ function inventory() {
 
 
 // --------------------------------------------------------------- wildlife
-// Things she plants and places attract visitors. Each session they are attracted, they visit for a couple of
-// hours and then go; after three visits they move in for good and wander about her garden. Residents never leave.
+// Pets live with her: the dog from the very start, the cat once she reaches its stone on the path (or adopts it early).
+// Everyone else is a garden visitor. Things she plants and places attract them; each session they are attracted,
+// they visit for a couple of hours and then go. After three visits they become regulars, who pop in after every
+// session and stay for most of the day.
 // item: something she can buy for that friend under Friends (cost in seeds). It brings them, and they use it.
-const VISITS_TO_STAY = 3, VISIT_HOURS = 2;
+const VISITS_TO_STAY = 3, VISIT_HOURS = 2, REGULAR_HOURS = 12;
 const WILD = {
   bee: { name: 'Bee', ic: '🐝', noise: 'buzz', says: 'bzzz', hint: 'Bees come when three flowers are blooming. They love lavender.',
     item: 'beehotel', cost: 8, need: (f) => f.bloom >= 3 || f.kinds.has('lavender') || f.has.beehive || f.has.beehotel },
@@ -1851,8 +1858,9 @@ const WILD = {
     item: 'buddleia', cost: 8, need: (f) => f.kinds.size >= 3 || f.has.buddleia },
   robin: { name: 'Robin', ic: '🐦', noise: 'chirp', says: 'tweet tweet', hint: 'Robins come for a bird feeder or a bird bath.',
     item: 'birdtable', cost: 8, need: (f) => f.has.feeder || f.has.birdbath || f.has.birdhouse || f.has.birdtable },
-  cat: { name: 'Cat', ic: '🐈', noise: 'purr', says: 'purrr', hint: 'A cat will visit if there is a bench or a basket to nap in.',
-    item: 'catbed', cost: 10, more: [{ item: 'cattree', cost: 10 }], need: (f) => f.has.bench || f.has.catbed },
+  cat: { name: 'Cat', ic: '🐈', noise: 'purr', says: 'purrr', pet: 20, hint: 'Your black cat. She loves a sunny bench, a basket and a cat tree.',
+    arrives: 'A black cat comes to live with you and your dog. Find her in your garden, and get her a basket to nap in.',
+    item: 'catbed', cost: 10, more: [{ item: 'cattree', cost: 10 }], need: () => false },
   hedgehog: { name: 'Hedgehog', ic: '🦔', noise: 'snuffle', says: 'snuffle snuffle', hint: 'Hedgehogs like a log pile or a little house to hide in.',
     item: 'hoghouse', cost: 10, more: [{ item: 'hogdish', cost: 6 }], need: (f) => f.has.logpile || f.has.hoghouse },
   frog: { name: 'Frog', ic: '🐸', noise: 'ribbit', says: 'ribbit', hint: 'Frogs live by the pond. Plant a flower and one will hop by.',
@@ -1875,15 +1883,23 @@ const WILD = {
     item: 'owlbox', cost: 14, need: (f) => f.has.owlbox || f.has.oak },
   fox: { name: 'Fox', ic: '🦊', noise: 'yip', says: 'yip!', hint: 'A fox curls up in a cosy den at the end of the garden.',
     item: 'foxden', cost: 14, need: (f) => f.has.foxden },
-  dog: { name: 'Labrador', ic: '🐕', noise: 'woof', says: 'woof!', hint: 'The black Labrador from next door pops round for a water bowl and a ball.',
-    item: 'dogbowl', cost: 10, more: [{ item: 'kennel', cost: 12 }, { item: 'dogtoys', cost: 8 }], need: (f) => f.has.dogbowl },
+  dog: { name: 'Labrador', ic: '🐕', noise: 'woof', says: 'woof!', pet: 0, hint: 'Your black Labrador. He lives with you, trots about the garden and loves a fuss.',
+    item: 'dogbowl', cost: 8, more: [{ item: 'dogbed', cost: 10 }, { item: 'dogtoys', cost: 8 }, { item: 'kennel', cost: 12 }], need: () => false },
 };
 // Everything she can get for a friend: its first thing, then its upgrades.
 const friendItems = (id) => [{ item: WILD[id].item, cost: WILD[id].cost }, ...(WILD[id].more || [])];
 const ITEM_OF = Object.fromEntries(Object.keys(WILD).flatMap((id) => friendItems(id).map((x) => [x.item, id])));
 // Bought for a friend: hers to place as often as she likes, like any decoration.
 const friendBought = (k) => bought().some((b) => b.k === 'friend:' + k);
-const wildState = (id) => G().wild[id] || { v: 0 };
+// Pets: the dog is hers from the start, the cat from its stone on the path or once adopted early.
+const PETS = Object.keys(WILD).filter((id) => WILD[id].pet !== undefined).sort((a, b) => WILD[a].pet - WILD[b].pet);
+const isPet = (id) => WILD[id].pet !== undefined;
+const petHome = (id) => WILD[id].pet <= total() || earlyBought('pet:' + id) || !!G().wild[id]?.home;
+const wildState = (id) => { const w = G().wild[id] || { v: 0 }; return isPet(id) && petHome(id) ? { ...w, home: true, off: false } : w; };
+// The dog's collar: the red one comes with him; the others cost a few seeds.
+const COLLARS = [{ id: 'red', name: 'Red collar', c: '#d9473d', cost: 0 }, { id: 'blue', name: 'Blue collar', c: '#3d6fd0', cost: 4 },
+  { id: 'bandana', name: 'Spotty bandana', c: '#e4576e', cost: 6 }, { id: 'daisy', name: 'Daisy chain', c: '#f6d44a', cost: 8 }];
+const collarOwned = (c) => !c.cost || bought().some((b) => b.k === 'collar:' + c.id);
 const wildName = (id) => wildState(id).name || WILD[id].name;
 function gardenFacts() {
   const has = {}, kinds = new Set();
@@ -1896,7 +1912,9 @@ function wildVisits() {
   const f = gardenFacts(), g = G(), out = [];
   Object.keys(WILD).forEach((id) => {
     const s = g.wild[id] || { v: 0 };
-    if (s.home || s.off || !WILD[id].need(f)) return;
+    if (isPet(id) || s.off) return;
+    if (s.home) { s.at = Date.now(); g.wild[id] = s; return; }
+    if (!WILD[id].need(f)) return;
     s.v++; s.last = total(); s.at = Date.now();
     if (s.v >= VISITS_TO_STAY) { s.home = true; s.since = Date.now(); }
     g.wild[id] = s;
@@ -2256,6 +2274,14 @@ const GARDEN = (() => {
       k.ball('#d7e85a', [0.24, 0.055, 0.1], 0.055); k.add(GEO.tor, '#ffffff', [0.24, 0.055, 0.1], [0, 0.5, 0.3], 0.052);
       k.cyl('#f4ecdc', [-0.22, 0.02, 0.12], [0.02, 0.18, 0.02], [0, 0, Math.PI / 2]); for (const x of [-0.31, -0.13]) for (const z of [0.1, 0.14]) k.ball('#f4ecdc', [x, 0.025, z], 0.025);
     } },
+    dogbed: { on: ['grass', 'patio', 'path'], make: (k) => {
+      const B = '#5a7fc4', C = '#f4ecdc';
+      k.cyl(tint(B, -0.08), [0, 0.04, 0], [0.36, 0.08, 0.3]);
+      k.add(GEO.tor, B, [0, 0.11, 0], [Math.PI / 2, 0, 0], [0.33, 0.27, 0.9]);
+      k.ball(C, [0, 0.09, 0], [0.29, 0.04, 0.23]);
+      // A tartan blanket folded over one side.
+      k.box('#c4513c', [0.12, 0.13, -0.05], [0.2, 0.025, 0.22], [0, 0.4, 0.1]); for (const d of [-0.05, 0.05]) k.box('#f2c94c', [0.12 + d, 0.144, -0.05], [0.012, 0.004, 0.22], [0, 0.4, 0.1]);
+    } },
     kennel: { on: ['grass', 'patio', 'path'], make: (k) => {
       const W = '#c9935c', R = '#c4513c', D = '#8e5f3a';
       k.box(tint(W, -0.1), [0, 0.03, 0.02], [0.74, 0.06, 0.7]);
@@ -2326,7 +2352,7 @@ const GARDEN = (() => {
     nutfeeder: { at: [0, 0.5, 0.06], act: 'peck' }, fatballs: { at: [0.2, 0.6, 0.09], act: 'peck' }, carrots: { at: [0, 0.1, 0.45], act: 'peck' },
     duckhouse: { at: [0, 0.07, 0.12], act: 'nap' }, owlbox: { at: [0, 1.59, 0.02], act: 'nap' }, foxden: { at: [0, 0, 0.5], act: 'nap' },
     mousehouse: { at: [0, 0, 0.2], act: 'hide' }, bughotel: { at: [0, 0.32, 0.22], act: 'hover' }, reeds: { at: [0, 0.75, 0], act: 'hover' },
-    dogbowl: { at: [0, 0, 0.22], act: 'peck' }, kennel: { at: [0, 0, 0.5], act: 'nap' }, dogtoys: { at: [0.1, 0, 0.32], act: 'sit' },
+    dogbowl: { at: [0, 0, 0.22], act: 'peck' }, kennel: { at: [0, 0, 0.5], act: 'nap' }, dogbed: { at: [0, 0.1, 0], act: 'nap' }, dogtoys: { at: [0.1, 0, 0.32], act: 'sit' },
     koi: { at: [0, 0.05, 0], act: 'sit' }, cattree: { at: [-0.06, 0.66, -0.03], act: 'nap' }, hutch: { at: [0.1, 0, 0.42], act: 'hide' },
     hogdish: { at: [0, 0, 0.2], act: 'peck' },
   };
@@ -2441,8 +2467,13 @@ const GARDEN = (() => {
     for (const s of [-1, 1]) { const p = new THREE.Group(); p.position.set(s * 0.015, y, z); const w = new THREE.Mesh(GEO.sph, wingMat); w.scale.set(len, 0.004, wid); w.position.x = s * len * 0.9; p.add(w); body.add(p); wings.push([p, s]); }
   }
   function buildAnimal(id) {
-    const g = new THREE.Group(), body = new THREE.Group(), wings = [], k = new Kit();
+    const g = new THREE.Group(), body = new THREE.Group(), wings = [], legs = [], k = new Kit();
+    let tail = null;
     g.add(body);
+    // A leg that swings from the hip: built hanging down from its pivot, so turning it about x moves the paw back and forth.
+    // ph is where it sits in the stride; front legs fold forward to lie down, back legs fold back.
+    const leg = (x, y, z, ph, front, fn) => { const lk = new Kit(); fn(lk); const p = new THREE.Group(); p.position.set(x, y, z); p.add(mesh(lk.build())); body.add(p); legs.push({ p, ph, front, hip: y }); };
+    const tailAt = (x, y, z, fn) => { const tk = new Kit(); fn(tk); tail = new THREE.Group(); tail.position.set(x, y, z); tail.add(mesh(tk.build())); body.add(tail); };
     const eyes = (x, y, z, r = 0.011) => { for (const s of [-1, 1]) { k.ball('#1b1b1b', [s * x, y, z], r); k.ball('#ffffff', [s * x + 0.003, y + 0.004, z + r * 0.7], r * 0.35); } };
     if (id === 'bee') {
       k.ball('#f6c445', [0, 0, 0], [0.07, 0.06, 0.09]);
@@ -2469,12 +2500,19 @@ const GARDEN = (() => {
       k.box(tit ? '#4a86d6' : '#6d4630', [0, 0.125, -0.11], [0.05, 0.016, 0.09], [-0.4, 0, 0]);
       for (const x of [-0.025, 0.025]) k.cyl('#c08a5a', [x, 0.02, 0.01], [0.006, 0.04, 0.006]);
     } else if (id === 'cat') {
-      const C = '#e8a35a', L = '#f6e1c3';
-      k.ball(C, [0, 0.12, 0], [0.12, 0.1, 0.2]); k.ball(L, [0, 0.11, 0.1], [0.08, 0.07, 0.08]);
-      k.ball(C, [0, 0.22, 0.17], 0.09); k.ball(L, [0, 0.2, 0.24], [0.045, 0.035, 0.03]);
-      for (const s of [-1, 1]) { k.cone(C, [s * 0.05, 0.3, 0.16], [0.03, 0.06, 0.026], [0, 0, -s * 0.25]); k.ball('#2b211a', [s * 0.035, 0.235, 0.245], 0.011); k.ball(C, [s * 0.06, 0.03, 0.12], [0.035, 0.03, 0.045]); k.ball(C, [s * 0.065, 0.03, -0.12], [0.035, 0.03, 0.045]); }
-      k.ball('#e88a9a', [0, 0.215, 0.268], 0.01);
-      for (let q = 0; q < 8; q++) k.ball(q > 5 ? tint(C, -0.1) : C, [0.03 + Math.sin(q * 0.4) * 0.05, 0.1 + q * 0.025, -0.2 - q * 0.02], 0.028);
+      // A black cat with green-gold eyes, up on four legs that walk in turn, and a tail that sways.
+      const C = '#262223', L = '#34302f', Y = 0.05;
+      k.ball(C, [0, 0.12 + Y, 0], [0.11, 0.095, 0.2]); k.ball(L, [0, 0.11 + Y, 0.1], [0.075, 0.065, 0.075]);
+      k.ball(C, [0, 0.23 + Y, 0.17], 0.088); k.ball(L, [0, 0.205 + Y, 0.24], [0.045, 0.035, 0.03]);
+      for (const s of [-1, 1]) {
+        k.cone(C, [s * 0.05, 0.31 + Y, 0.16], [0.03, 0.06, 0.026], [0, 0, -s * 0.25]); k.cone('#c98a95', [s * 0.05, 0.305 + Y, 0.172], [0.016, 0.035, 0.008], [0, 0, -s * 0.25]);
+        k.ball('#b8d243', [s * 0.036, 0.24 + Y, 0.235], [0.02, 0.022, 0.012]); k.ball('#141112', [s * 0.036, 0.24 + Y, 0.246], [0.006, 0.018, 0.004]); k.ball('#ffffff', [s * 0.031, 0.248 + Y, 0.248], 0.0035);
+        for (const d of [-1, 1]) k.box('#8a8486', [s * 0.06, 0.205 + Y + d * 0.008, 0.25], [0.07, 0.002, 0.002], [0, -s * 0.2, d * s * 0.12]);
+      }
+      k.ball('#e88a9a', [0, 0.218 + Y, 0.268], 0.01);
+      for (const [x, z, ph, front] of [[-1, 1, Math.PI / 2, 1], [1, 1, Math.PI * 1.5, 1], [-1, -1, 0, 0], [1, -1, Math.PI, 0]])
+        leg(x * 0.055, 0.12 + Y - 0.02, z * 0.12, ph, front, (lk) => { lk.cyl(C, [0, -0.06, 0], [0.024, 0.12, 0.024]); lk.ball(C, [0, -0.12, 0.012], [0.03, 0.02, 0.036]); });
+      tailAt(0.0, 0.14 + Y, -0.18, (tk) => { for (let q = 0; q < 8; q++) tk.ball(q > 5 ? tint(C, 0.04) : C, [Math.sin(q * 0.4) * 0.05, q * 0.025, -0.02 - q * 0.02], 0.026); });
     } else if (id === 'hedgehog') {
       k.ball('#c9a27a', [0, 0.07, 0.02], [0.1, 0.07, 0.13]); k.ball('#6e5440', [0, 0.09, -0.02], [0.105, 0.08, 0.12]);
       for (let q = 0; q < 46; q++) {
@@ -2549,20 +2587,28 @@ const GARDEN = (() => {
       // A black Labrador: broad head, floppy ears, thick otter tail and a red collar.
       const C = '#2b2725', L = '#3d3734', M = '#3b3532';
       k.box(C, [0, 0.18, -0.01], [0.16, 0.14, 0.3]); k.ball(L, [0, 0.2, 0.12], [0.085, 0.085, 0.07]); k.ball(C, [0, 0.19, -0.13], [0.08, 0.075, 0.07]);
-      for (const x of [-1, 1]) for (const z of [-1, 1]) { k.cyl(C, [x * 0.05, 0.065, z * 0.1], [0.026, 0.13, 0.026]); k.ball(M, [x * 0.05, 0.012, z * 0.1 + 0.012], [0.03, 0.016, 0.036]); }
+      // A trot: each front leg moves with the opposite back leg.
+      for (const [x, z, ph, front] of [[-1, 1, 0, 1], [1, 1, Math.PI, 1], [-1, -1, Math.PI, 0], [1, -1, 0, 0]])
+        leg(x * 0.05, 0.14, z * 0.1, ph, front, (lk) => { lk.cyl(C, [0, -0.065, 0], [0.026, 0.14, 0.026]); lk.ball(M, [0, -0.128, 0.012], [0.03, 0.016, 0.036]); });
       k.ball(C, [0, 0.31, 0.17], [0.078, 0.072, 0.075]); k.box(M, [0, 0.282, 0.245], [0.07, 0.055, 0.08]); k.ball('#141211', [0, 0.297, 0.287], [0.018, 0.014, 0.012]);
       k.ball(L, [0, 0.36, 0.19], [0.05, 0.02, 0.04]);
       for (const s of [-1, 1]) {
         k.ball('#6b3e1f', [s * 0.032, 0.325, 0.232], 0.013); k.ball('#0d0c0b', [s * 0.032, 0.325, 0.243], 0.007); k.ball('#ffffff', [s * 0.028, 0.33, 0.246], 0.0035);
         k.ball(M, [s * 0.072, 0.29, 0.155], [0.022, 0.06, 0.042], [0, 0, s * 0.18]);
       }
-      k.cyl('#d9473d', [0, 0.25, 0.135], [0.062, 0.022, 0.062], [0.55, 0, 0]); k.ball('#f2c94c', [0, 0.222, 0.19], 0.014);
-      k.cone(C, [0, 0.22, -0.23], [0.03, 0.17, 0.03], [-1.2, 0, 0]);
+      const col = wildState('dog').collar || 'red';
+      if (col === 'bandana') {
+        k.cyl('#e4576e', [0, 0.25, 0.135], [0.064, 0.024, 0.064], [0.55, 0, 0]); k.cone('#e4576e', [0, 0.2, 0.19], [0.06, 0.08, 0.02], [Math.PI + 0.35, 0, 0]);
+        for (const [x, y] of [[-0.02, 0.215], [0.022, 0.22], [0, 0.185]]) k.ball('#ffffff', [x, y, 0.205], 0.008);
+      } else if (col === 'daisy') {
+        for (let q = 0; q < 9; q++) { const a = (q / 9) * TAU; k.ball(q % 2 ? '#ffffff' : '#f6d44a', [Math.sin(a) * 0.065, 0.25 + Math.cos(a) * 0.035, 0.135 + Math.cos(a) * 0.05], q % 2 ? 0.02 : 0.013); }
+      } else { k.cyl(col === 'blue' ? '#3d6fd0' : '#d9473d', [0, 0.25, 0.135], [0.062, 0.022, 0.062], [0.55, 0, 0]); k.ball('#f2c94c', [0, 0.222, 0.19], 0.014); }
+      tailAt(0, 0.22, -0.16, (tk) => tk.cone(C, [0, 0, -0.07], [0.03, 0.17, 0.03], [-1.2, 0, 0]));
     }
     body.add(mesh(k.build()));
     const hit = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshBasicMaterial()); hit.visible = false; hit.position.y = 0.15; g.add(hit);
     g.scale.setScalar(WL3[id].scale);
-    return { g, body, wings };
+    return { g, body, wings, legs, tail };
   }
   function buildGift() {
     const k = new Kit(), R = '#e86a5a', Y = '#ffd76a';
@@ -2601,7 +2647,7 @@ const GARDEN = (() => {
     hat: opt([['none', 'No hat'], ['sunhat', 'Sun hat', 8], ['bobble', 'Bobble hat', 8], ['scarf', 'Headscarf', 6], ['beret', 'Beret', 8], ['straw', 'Straw hat', 12], ['crown', 'Flower crown', 15]]),
     extra: opt([['none', 'Nothing'], ['scarf', 'Scarf', 6], ['bag', 'Satchel', 8], ['basket', 'Basket', 10]]),
   };
-  const DEFAULT_ME = { skin: '1', eyes: 'dots', mouth: 'smile', cheeks: 'rosy', glasses: 'none', hair: 'bob', hairC: 'grey', top: 'cardigan', topC: '5', boots: 'green', hat: 'none', extra: 'none', name: '' };
+  const DEFAULT_ME = { skin: '1', eyes: 'dots', mouth: 'smile', cheeks: 'rosy', glasses: 'none', hair: 'bob', hairC: 'brown', top: 'cardigan', topC: '5', boots: 'green', hat: 'none', extra: 'none', name: '' };
   const me = () => { const g = G(); g.me = { ...DEFAULT_ME, ...(g.me || {}) }; return g.me; };
   const wearOf = (slot, id) => WEAR[slot].find((o) => o.id === id) || WEAR[slot][0];
   const wearKey = (slot, id) => `${slot}:${id}`;
@@ -2696,7 +2742,7 @@ const GARDEN = (() => {
     if (L.glasses === 'square') for (const s of [-1, 1]) { const x = s * 0.068; k.box(F, [x, 0.03, 0.19], [0.08, 0.008, 0.008]); k.box(F, [x, -0.026, 0.19], [0.08, 0.008, 0.008]); k.box(F, [x - 0.04, 0.002, 0.188], [0.008, 0.062, 0.008]); k.box(F, [x + 0.04, 0.002, 0.188], [0.008, 0.062, 0.008]); }
     if (L.glasses === 'sunnies') for (const s of [-1, 1]) k.ball('#2b2b38', [s * 0.068, 0.002, 0.188], [0.046, 0.036, 0.012]);
     if (L.glasses !== 'none') k.box(F, [0, 0.01, 0.196], [0.05, 0.008, 0.008]);
-    hairK(k, L.hair, HAIR_C[L.hairC] || HAIR_C.grey); hatK(k, L.hat);
+    hairK(k, L.hair, HAIR_C[L.hairC] || HAIR_C.brown); hatK(k, L.hat);
   }
   function eyesK(k, L) {
     const dot = (s) => { k.ball(INK, [s * 0.068, 0, 0.175], [0.024, 0.032, 0.014]); k.ball('#ffffff', [s * 0.068 + 0.008, 0.012, 0.188], 0.007); };
@@ -3374,7 +3420,10 @@ const GARDEN = (() => {
   const hideValid = () => { hi.count = 0; valid = new Set(); };
 
   // ---------------------------------------------------------- the wildlife living here
-  const present = () => Object.keys(WILD).filter((id) => { const w = wildState(id); return !w.off && (w.home || (w.v && w.at && Date.now() - w.at < VISIT_HOURS * 3600e3)); });
+  const present = () => Object.keys(WILD).filter((id) => {
+    const w = wildState(id), ago = (h) => w.at && Date.now() - w.at < h * 3600e3;
+    return !w.off && (isPet(id) ? w.home : w.home ? ago(REGULAR_HOURS) : w.v && ago(VISIT_HOURS));
+  });
   const walkable = (x, z) => { const t = typeAt(x, z); return t && t !== 'water' && t !== 'soil' && Math.abs(x) < HALF - 0.3 && z > -HALF + 0.4 && z < HALF - 0.3; };
   function groundSpot(near, rad = 2) {
     for (let q = 0; q < 40; q++) {
@@ -3409,6 +3458,7 @@ const GARDEN = (() => {
       if (Math.random() < 0.7) { const p = pick(lilies); return V(p.position.x, 0.05, p.position.z); }
       const ang = rnd(TAU); return V(POND.x + Math.cos(ang) * (POND.rx + 0.3), 0, POND.z + Math.sin(ang) * (POND.rz + 0.3));
     }
+    if (a.id === 'dog' && hero && Math.random() < 0.4) return groundSpot(hero.pos, 0.8);
     const liked = objs.filter((o) => (W.likes || []).includes(o.userData.k));
     if (liked.length && Math.random() < 0.45) {
       const o = pick(liked), k = o.userData.k;
@@ -3424,16 +3474,39 @@ const GARDEN = (() => {
     Object.keys(animals).forEach((id) => { if (!want.has(id)) { scene.remove(animals[id].g); removeFrom(pickables, animals[id].g); delete animals[id]; } });
     want.forEach((id) => {
       if (animals[id]) return;
-      const { g, body, wings } = buildAnimal(id), a = { id, g, body, wings, pos: V(), tgt: null, wait: rnd(0.5, 2), hop: 0 }, W = WL3[id];
+      const { g, body, wings, legs, tail } = buildAnimal(id), a = { id, g, body, wings, legs, tail, pos: V(), tgt: null, wait: rnd(0.5, 2), hop: 0, gait: 0 }, W = WL3[id];
       a.pos.copy(W.fly ? groundSpot().add(V(0, 1.2, 0)) : id === 'frog' && lilies.length ? V(lilies[0].position.x, 0.05, lilies[0].position.z) : W.swim ? V(POND.x, 0.03, POND.z) : groundSpot());
       g.position.copy(a.pos); g.userData.animal = id; scene.add(g); pickables.push(g); animals[id] = a;
     });
   }
+  // Legs: swing through the stride while walking, ease back to standing when still, and fold to lie down for a nap.
+  // The tail wags faster when walking (the dog's more than the cat's).
+  function poseLegs(a, dt, t, walking) {
+    const e = Math.min(1, dt * 8), lie = a.nap && !walking, cat = a.id === 'cat';
+    a.legs.forEach((L) => {
+      const want = walking ? Math.sin(a.gait + L.ph) * (cat ? 0.5 : 0.65) : lie ? (L.front ? -1.35 : 1.35) : 0;
+      L.p.rotation.x += (want - L.p.rotation.x) * (walking ? 1 : e);
+    });
+    const drop = lie ? -a.legs[0].hip * 0.78 : walking ? Math.abs(Math.cos(a.gait)) * 0.012 : 0;
+    a.body.position.y += (drop - a.body.position.y) * (walking ? 1 : e);
+    if (a.tail) {
+      a.tail.rotation.y = Math.sin(t * (walking ? (cat ? 3 : 9) : lie ? 0.8 : cat ? 1.5 : 4)) * (lie ? 0.15 : cat ? 0.35 : 0.5);
+      a.tail.rotation.x = cat ? (walking ? -0.25 : 0) : 0;
+    }
+  }
   function stepAnimal(a, dt, t) {
     const W = WL3[a.id], g = a.g;
     a.wings.forEach(([w, s]) => { w.rotation.z = s * Math.sin(t * (W.flap || 9)) * (W.flap > 30 ? 0.5 : 0.9); });
+    const legged = a.legs?.length > 0;
     if (a.wait > 0) {
       a.wait -= dt;
+      if (legged) {
+        poseLegs(a, dt, t, false);
+        if (a.peck) a.body.rotation.x = Math.max(0, Math.sin(t * 6)) * 0.3;
+        else a.body.scale.set(1, 1 + Math.sin(t * 2) * 0.015, 1);
+        if (a.wait <= 0) { g.visible = true; a.tgt = nextTarget(a); a.body.rotation.x = 0; a.body.scale.set(1, 1, 1); }
+        return;
+      }
       if (W.fly && !a.nap) g.position.y = a.pos.y + Math.sin(t * 3 + a.pos.x) * 0.04;
       if (W.swim) g.position.y = a.pos.y + Math.sin(t * 1.6 + a.pos.x) * 0.01;
       if (a.peck) a.body.rotation.x = Math.max(0, Math.sin(t * 9)) * 0.5;
@@ -3459,6 +3532,7 @@ const GARDEN = (() => {
     const base = Math.max(a.id === 'frog' ? 0.04 : 0, a.tgt.y > 0.2 ? a.pos.y : topAt(a.pos.x, a.pos.z));
     a.pos.y = base;
     if (W.hop) { a.hop += step * W.hop; g.position.y = base + Math.abs(Math.sin(a.hop)) * (W.hopH || 0.1); }
+    else if (legged) { g.position.y = base; a.gait += (step / W.scale) * (a.id === 'cat' ? 24 : 20); poseLegs(a, dt, t, true); a.body.rotation.z = Math.sin(a.gait) * 0.02; }
     else { g.position.y = base; a.body.rotation.z = Math.sin(t * 10) * 0.04; }
     // Climbing onto a bench, a bird table or the like: rise in an arc as it gets close.
     if (a.tgt.y > 0.2 && dist < 0.6) g.position.y = a.tgt.y * (1 - dist / 0.6) + base + Math.sin((1 - dist / 0.6) * Math.PI) * 0.25;
@@ -3831,7 +3905,7 @@ const GARDEN = (() => {
     shoot('seed', mesh(sk.build()));
     $('gd-seed-ic').src = thumbs.seed;
     const dock = (t, src) => { document.querySelector(`#garden [data-gd="${t}"] img`).src = src; };
-    dock('plant', thumbs['fl:tulip']); dock('decor', thumbs['dc:bench']); dock('friends', thumbs['wl:robin']);
+    dock('plant', thumbs['fl:tulip']); dock('decor', thumbs['dc:bench']); dock('friends', thumbs['wl:dog']);
     Object.keys(FL).forEach((k) => shoot('bq:' + k, mesh(cached('bq:' + k, (kit) => bouquetK(kit, k)))));
   }
   function thumbOf(k, rare) {
@@ -3884,7 +3958,7 @@ const GARDEN = (() => {
   }
   const canGive = (id) => wildState(id).home && G().bouq.length > 0 && wildState(id).gave !== dayKey(now());
   function giveBouquet(id) {
-    const w = G().wild[id], b = G().bouq.shift(); w.gave = dayKey(now()); saveSettings(); updateSeeds();
+    const w = G().wild[id] || (G().wild[id] = { v: 0 }), b = G().bouq.shift(); w.gave = dayKey(now()); saveSettings(); updateSeeds();
     const a = animals[id], at = a ? a.pos.clone() : hero?.pos;
     if (a) { a.wait = Math.max(a.wait, 2.5); speak(id, 'Thank you!', `${wildName(id)} loves the ${SP[b.k].many.toLowerCase()}`); const [x, y] = screenOf(a.g.position); hearts(x, y - 30); sound(WILD[id].noise); }
     setTimeout(() => { addGift(randomSurprise(), at); saveSettings(); refreshDot(); toast(`${wildName(id)} left you a present 🎁`, thumbs.gift); }, 1300);
@@ -3999,7 +4073,7 @@ const GARDEN = (() => {
   }
   function renderTray() {
     const list = $('gd-list'), list2 = $('gd-list2'); list.innerHTML = ''; list2.innerHTML = '';
-    list2.hidden = $('gd-tray-sub2').hidden = tab !== 'areas';
+    list2.hidden = $('gd-tray-sub2').hidden = tab !== 'areas' && tab !== 'friends';
     const seeds = inventory().seeds;
     if (tab === 'plant') {
       $('gd-tray-title').textContent = 'Plant';
@@ -4014,14 +4088,21 @@ const GARDEN = (() => {
       open.forEach((k) => list.appendChild(itemBtn({ img: thumbOf(k), name: DECOR[k].name, sub: DECOR[k].special ? 'Rare find' : ITEM_OF[k] ? `For the ${WILD[ITEM_OF[k]].name.toLowerCase()}` : 'Free', tag: DECOR[k].special ? '✨' : '', onClick: () => startTool({ type: 'decor', k }) })));
       earlyChips(list, Object.keys(DC).filter((k) => DECOR[k]));
     } else if (tab === 'friends') {
-      const all = Object.keys(WILD), homes = all.filter((id) => wildState(id).home).length, bq = G().bouq.length;
-      $('gd-tray-title').textContent = 'Garden friends';
-      $('gd-tray-sub').textContent = homes && bq ? `You have ${PL(bq, 'bouquet', 'bouquets')}. Give one to a friend who lives here and they will leave a present.`
-        : `${homes} of ${all.length} live here. Tap a friend to see what you can get for them.`;
-      all.forEach((id) => {
-        const w = wildState(id), W = WILD[id], has = friendItems(id).every((x) => friendBought(x.item));
-        list.appendChild(itemBtn({ img: thumbOf(id), name: w.home || w.v ? wildName(id) : W.name, sub: w.off ? 'Not visiting' : w.home ? 'Lives here' : w.v ? `Visited ${w.v} of ${VISITS_TO_STAY}` : 'Not met yet',
-          tag: w.off ? '💤' : canGive(id) ? '💐' : has ? '✓' : `🌱${(friendItems(id).find((x) => !friendBought(x.item)) || W).cost}`, unknown: !w.v && !w.home, onClick: () => friendCard(id) }));
+      const vis = Object.keys(WILD).filter((id) => !isPet(id)), regs = vis.filter((id) => wildState(id).home).length, bq = G().bouq.length;
+      const next = (id) => (friendItems(id).find((x) => !friendBought(x.item)) || WILD[id]).cost, has = (id) => friendItems(id).every((x) => friendBought(x.item));
+      $('gd-tray-title').textContent = 'Pets and visitors';
+      $('gd-tray-sub').textContent = bq ? `You have ${PL(bq, 'bouquet', 'bouquets')}. Give one to a pet or a regular visitor and they will leave a present.`
+        : 'Your pets live with you. Tap one to get them something.';
+      PETS.forEach((id) => {
+        const w = wildState(id);
+        list.appendChild(itemBtn({ img: thumbOf(id), name: w.home ? wildName(id) : WILD[id].name, sub: w.home ? 'Your pet' : `Comes at session ${WILD[id].pet}`, locked: !w.home,
+          tag: !w.home ? `🌱${earlyPrice('pet:' + id)}` : canGive(id) ? '💐' : has(id) ? '✓' : `🌱${next(id)}`, onClick: () => friendCard(id) }));
+      });
+      $('gd-tray-sub2').textContent = `Garden visitors · ${regs} of ${vis.length} are regulars. After ${VISITS_TO_STAY} visits they pop in after every session.`;
+      vis.forEach((id) => {
+        const w = wildState(id), W = WILD[id];
+        list2.appendChild(itemBtn({ img: thumbOf(id), name: w.home || w.v ? wildName(id) : W.name, sub: w.off ? 'Not visiting' : w.home ? 'Regular' : w.v ? `Visited ${w.v} of ${VISITS_TO_STAY}` : 'Not met yet',
+          tag: w.off ? '💤' : canGive(id) ? '💐' : has(id) ? '✓' : `🌱${next(id)}`, unknown: !w.v && !w.home, onClick: () => friendCard(id) }));
       });
     } else if (tab === 'areas') {
       $('gd-tray-title').textContent = 'Gardens';
@@ -4042,10 +4123,11 @@ const GARDEN = (() => {
     }
   }
   // A friend's card: who they are, how to bring them, and the things she can buy for them, which they then use.
-  // The first thing comes first; once she has it, the upgrades show. Any friend she has met can be named,
-  // and any friend can be asked to stay away (and welcomed back later).
+  // A pet's things are all there to get at once; a visitor's first thing comes first, then its upgrades.
+  // Any friend she has met can be named, and any visitor can be asked to stay away (and welcomed back later).
   function friendCard(id) {
-    const w = wildState(id), W = WILD[id], seeds = inventory().seeds, met = w.home || w.v > 0;
+    const w = wildState(id), W = WILD[id], seeds = inventory().seeds, met = w.home || w.v > 0, pet = isPet(id);
+    if (pet && !w.home) { petCard(id); return; }
     const save = (v) => { const g = G(); g.wild[id] = { ...wildState(id), name: (v || '').trim() || W.name }; saveSettings(); };
     const row = ({ item: k, cost }) => {
       const D = DECOR[k], has = friendBought(k), placed = its().some((it) => it.k === k);
@@ -4057,8 +4139,9 @@ const GARDEN = (() => {
       go.onclick = () => { closeCard(); if (has) startTool({ type: 'decor', k }); else buyFriend(id, k, cost); };
       shop.append(pic, info, go); return shop;
     };
-    const [first, ...ups] = friendItems(id), extra = [el('div', 'gd-for-h', `Something for the ${W.name.toLowerCase()}`), row(first)];
-    if (ups.length) {
+    const [first, ...ups] = friendItems(id), extra = [el('div', 'gd-for-h', pet ? `Things for ${wildName(id)}` : `Something for the ${W.name.toLowerCase()}`), row(first)];
+    if (pet) extra.push(...ups.map(row));
+    else if (ups.length) {
       if (friendBought(first.item)) extra.push(el('div', 'gd-for-h', 'Upgrades'), ...ups.map(row));
       else extra.push(el('small', 'gd-for-more', `Get the ${DECOR[first.item].name.toLowerCase()} and there is more to get after: ${ups.map((x) => DECOR[x.item].name.toLowerCase()).join(' and ')}.`));
     }
@@ -4067,15 +4150,53 @@ const GARDEN = (() => {
       const g = G(); g.wild[id] = { ...wildState(id), off: !w.off }; saveSettings(); closeCard(); spawnAnimals(); renderTray();
       toast(w.off ? `${wildName(id)} can come back now` : `${met ? wildName(id) : `The ${W.name.toLowerCase()}`} will stay away. You can let them back any time here`, thumbOf(id));
     };
-    extra.push(off);
-    const kick = w.off ? 'Not visiting' : w.home ? (w.since ? `Lives here since ${fmtDate(w.since)}` : 'Lives in your garden')
-      : w.v ? `Visited ${PL(w.v, 'time', 'times')} · ${PL(VISITS_TO_STAY - w.v, 'more visit', 'more visits')} and it moves in` : 'Not met yet';
+    if (id === 'dog') extra.push(el('div', 'gd-for-h', 'His collar'), collarRow());
+    if (!pet) extra.push(off);
+    const kick = pet ? `Your ${W.name === 'Labrador' ? 'dog' : W.name.toLowerCase()} · lives with you` : w.off ? 'Not visiting' : w.home ? 'A regular visitor'
+      : w.v ? `Visited ${PL(w.v, 'time', 'times')} · ${PL(VISITS_TO_STAY - w.v, 'more visit', 'more visits')} and it becomes a regular` : 'Not met yet';
     if (met) openCard({ img: thumbOf(id), kicker: kick, title: wildName(id), cls: 'friend',
       text: canGive(id) ? `Give ${wildName(id)} a bouquet and they will leave you a present.` : w.home && G().bouq.length && w.gave === dayKey(now()) ? 'Had a bouquet today. Come back tomorrow with another.' : W.hint,
       extra, input: { value: wildName(id), label: `Name for your ${W.name.toLowerCase()}`, before: true },
       buttons: [...(canGive(id) ? [{ label: 'Give a bouquet 💐', fn: (v) => { save(v); giveBouquet(id); } }] : []),
         { label: 'Save the name', fn: (v) => { save(v); renderTray(); } }, { label: 'Close' }] });
     else openCard({ img: thumbOf(id), kicker: kick, title: W.name, text: W.hint, extra, cls: 'friend', buttons: [{ label: 'Close' }] });
+  }
+  // A pet still to come: when it arrives, and the chance to adopt it early for seeds.
+  function petCard(id) {
+    const W = WILD[id], at = W.pet, price = earlyPrice('pet:' + id), have = inventory().seeds;
+    openCard({ img: thumbOf(id), kicker: `Comes to live with you at session ${at} · ${PL(at - total(), 'session', 'sessions')} to go`, title: `A ${W.name.toLowerCase()}`, cls: 'friend',
+      text: `${W.arrives} ${have >= price ? `Or adopt her now for ${price} seeds.` : `Or adopt her early for ${price} seeds. You have ${have}, so ${price - have} more to go.`}`,
+      buttons: have >= price ? [{ label: `Adopt now · ${price} seeds`, fn: () => adoptPet(id) }, { label: 'Not now' }] : [{ label: 'OK' }] });
+  }
+  function adoptPet(id) {
+    const price = earlyPrice('pet:' + id); if (inventory().seeds < price) return;
+    bought().push({ k: 'early:pet:' + id, c: price }); saveSettings(); updateSeeds(); sound('badge');
+    spawnAnimals(); renderTray(); if (hero && !dressing) heroDo('jig', 1.4);
+    const a = animals[id]; if (a) { const [x, y] = screenOf(a.g.position); hearts(x, y - 30); sound(WILD[id].noise); }
+    toast(`Your ${WILD[id].name.toLowerCase()} has come to live with you. Tap her to give her a name`, thumbOf(id));
+  }
+  // The dog's collar: tap one he has to put it on, or one with a price to buy it.
+  function collarRow() {
+    const row = el('div', 'gd-collars'), cur = wildState('dog').collar || 'red';
+    COLLARS.forEach((c) => {
+      const own = collarOwned(c), b = el('button', 'gd-chip' + (c.id === cur ? ' on' : ''));
+      const dot = el('i'); dot.style.background = c.c; b.append(dot, document.createTextNode(own ? c.name : `${c.name} · 🌱${c.cost}`));
+      b.onclick = () => {
+        if (c.id === cur) return;
+        if (!own) {
+          const seeds = inventory().seeds;
+          if (seeds < c.cost) { toast(`${PL(c.cost - seeds, 'more seed', 'more seeds')} for the ${c.name.toLowerCase()}. Each session brings one 🌱`, thumbOf('dog')); return; }
+          bought().push({ k: 'collar:' + c.id, c: c.cost }); updateSeeds(); sound('badge');
+        } else sound('rep');
+        const g = G(); g.wild.dog = { ...(g.wild.dog || { v: 0 }), collar: c.id }; saveSettings(); refreshDog(); friendCard('dog');
+      };
+      row.appendChild(b);
+    });
+    return row;
+  }
+  function refreshDog() {
+    const a = animals.dog; if (a) { scene.remove(a.g); removeFrom(pickables, a.g); delete animals.dog; }
+    spawnAnimals(); const { g } = buildAnimal('dog'); g.scale.setScalar(1); shoot('wl:dog', g);
   }
   function buyFriend(id, k, cost) {
     const W = WILD[id], D = DECOR[k], seeds = inventory().seeds;
@@ -4155,8 +4276,7 @@ const GARDEN = (() => {
     burst(g.position.clone().add(V(0, 0.4, 0)), 24, { colors: [it.rare ? RARE[it.rare].c : FL[it.k].c, '#ffffff', LEAF], speed: 1, up: 2, size: 0.04 });
     popOut(g, () => { fillObj(g, it); popIn(g); }); sound('plant'); updateSeeds();
     if (hero && !dressing) heroDo('jig', 1.2);
-    const homes = Object.keys(WILD).some((id) => wildState(id).home);
-    toast(homes ? `A bouquet of ${SP[it.k].many.toLowerCase()} 💐 Give it to a garden friend and they will leave a present` : `A bouquet of ${SP[it.k].many.toLowerCase()} 💐 Keep it for a friend who moves in`, thumbs['bq:' + it.k]);
+    toast(`A bouquet of ${SP[it.k].many.toLowerCase()} 💐 Give it to a pet or a regular visitor and they will leave a present`, thumbs['bq:' + it.k]);
   }
   function deselect() { selected = null; $('gd-actions').classList.remove('open'); if (selRing) selRing.visible = false; }
 
@@ -5418,8 +5538,8 @@ function revealInfo(item) {
   if (item.wild) {
     const w = WILD[item.wild], src = GARDEN.pic(item.wild);
     return { cls: 'rv-ic', ic: src ? `<img src="${src}" alt="" style="width:96px;height:96px">` : emojiSVG(w.ic), kicker: 'A new friend',
-      title: `The ${w.name.toLowerCase()} has moved in`,
-      text: 'After three visits it has made your garden its home, and it will stay for good. You can give it a name under Friends in your garden.' };
+      title: `The ${w.name.toLowerCase()} is a regular now`,
+      text: 'After three visits it loves your garden, and it will pop in after every session. You can give it a name under Friends in your garden.' };
   }
   const b = item.badge;
   return { cls: 'rv-ic medal-ic', ic: badgeSVG(b), kicker: b.lv > 1 ? `Up to level ${b.lv}` : 'New badge', title: lvName(b), text: b.d };
