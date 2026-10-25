@@ -89,7 +89,7 @@ button.card { font-weight: 400; }
 .bar.gold i { background: var(--gold); }
 
 /* Tab bar */
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; height: var(--tabh); padding-bottom: var(--safe-b); display: grid; grid-template-columns: repeat(5, 1fr);
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; height: var(--tabh); padding-bottom: var(--safe-b); display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
   background: var(--bar); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-top: 0.5px solid var(--line); z-index: 5; }
 .tabbar button { background: none; border-radius: 0; min-height: 0; display: grid; justify-items: center; align-content: center; gap: 2px;
   font-size: 0.7rem; font-weight: 600; color: var(--muted); padding: 0; }
