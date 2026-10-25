@@ -172,6 +172,7 @@ body.previewing .gd-hud { top: calc(env(safe-area-inset-top, 0px) + 64px); }
 #garden .gd-pill { pointer-events: auto; background: var(--gd-cream); border-radius: 999px; padding: 6px 14px 6px 8px; font-weight: 800; box-shadow: var(--gd-shadow);
   display: flex; align-items: center; gap: 6px; font-size: 15px; }
 .gd-pill img { width: 30px; height: 30px; }
+.gd-pill .gd-next { display: block; font-size: 11px; font-weight: 700; color: var(--gd-ink2); }
 #garden .gd-when { padding: 8px 14px; font-size: 13px; color: var(--gd-ink2); }
 .gd-pill.bump { animation: gd-bump .5s; }
 @keyframes gd-bump { 40% { transform: scale(1.18); } }
@@ -321,34 +322,6 @@ body.previewing .screen .wrap > header { margin-top: 64px; }
 .sheet .sh-ic svg { width: 52px; height: auto; overflow: visible; }
 .sheet .sh-btns { display: grid; gap: 8px; }
 
-/* Path: a winding trail from the bottom up, one stone per session */
-.trail { position: relative; margin: 0 -16px; }
-.trail > svg.line { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.stone { position: absolute; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; min-height: 0; padding: 0; display: grid; place-items: center;
-  font: 700 0.9rem var(--round); background: #e8e0d0; color: #8a7d66; box-shadow: 0 3px 0 #cfc3ac; }
-.stone.done { background: var(--stem); color: #fff; box-shadow: 0 3px 0 color-mix(in srgb, var(--stem) 70%, #000); }
-.stone.next { background: var(--card); color: var(--accent); box-shadow: 0 0 0 4px var(--accent), 0 3px 10px rgb(0 0 0 / .2); animation: nextpulse 1.8s ease-in-out infinite; }
-@keyframes nextpulse { 50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 35%, transparent), 0 3px 10px rgb(0 0 0 / .2); } }
-.stone.big { width: 66px; height: 66px; margin: -33px 0 0 -33px; background: var(--gold-soft); box-shadow: 0 0 0 3px var(--gold), 0 4px 0 color-mix(in srgb, var(--gold) 60%, #000); }
-.stone.big.gate { background: var(--soft); box-shadow: 0 0 0 3px var(--accent), 0 4px 0 color-mix(in srgb, var(--accent) 60%, #000); }
-.stone.big svg { width: 44px; height: 44px; overflow: visible; }
-.stone.big.ahead svg { filter: grayscale(0.7); opacity: 0.6; }
-.stone.big.got::after { content: '✓'; position: absolute; right: -4px; bottom: -4px; width: 22px; height: 22px; border-radius: 50%; background: var(--stem); color: #fff;
-  font-size: 0.75rem; display: grid; place-items: center; }
-.stone.big.next { animation: nextpulse 1.8s ease-in-out infinite; }
-.tag { position: absolute; transform: translateY(-50%); max-width: 38%; font-size: 0.8rem; line-height: 1.2; pointer-events: none; }
-.tag strong { display: block; font-size: 0.92rem; }
-.tag span { color: var(--muted); }
-.you { position: absolute; transform: translate(30px, -50%); background: var(--fg); color: var(--bg); font-size: 0.74rem; font-weight: 700;
-  padding: 5px 11px; border-radius: 999px; white-space: nowrap; pointer-events: none; z-index: 2; }
-.you.left { transform: translate(calc(-100% - 30px), -50%); }
-.you.above { transform: translate(-50%, calc(-100% - 40px)); }
-.chapter { position: absolute; left: 16px; right: 16px; transform: translateY(-50%); text-align: center; pointer-events: none; }
-.chapter span { display: inline-block; background: var(--card); border-radius: 999px; padding: 6px 16px; font-weight: 700; font-size: 0.9rem; box-shadow: 0 2px 8px rgb(0 0 0 / .08); }
-.chapter small { display: block; color: var(--muted); font-size: 0.72rem; font-weight: 600; }
-.fog { position: absolute; left: 0; right: 0; top: 0; height: 140px; background: linear-gradient(var(--bg) 30%, transparent); display: grid; justify-items: center; align-content: start; padding-top: 8px; pointer-events: none; }
-.fog span { font-weight: 600; color: var(--muted); font-size: 0.9rem; }
-.tuft { position: absolute; width: 18px; height: 10px; pointer-events: none; opacity: 0.6; }
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .stepper { display: flex; align-items: center; gap: 4px; }
 .stepper button { min-height: 44px; width: 44px; padding: 0; border-radius: 12px; font-size: 1.3rem; background: var(--soft); }
@@ -624,14 +597,6 @@ body.previewing .screen .wrap > header { margin-top: 64px; }
   </div>
 </section>
 
-<!-- PATH -->
-<section class="screen tabbed" id="path" hidden>
-  <div class="wrap">
-    <header class="large"><p class="kicker" id="p-sum"></p><h1>Your path</h1></header>
-    <div class="trail" id="trail"></div>
-  </div>
-</section>
-
 <div class="previewbar" id="previewbar" hidden><span class="grow" id="preview-txt"></span><button id="preview-fill">Fill garden</button><button id="preview-exit">Back to now</button></div>
 
 <!-- GARDEN -->
@@ -689,7 +654,7 @@ body.previewing .screen .wrap > header { margin-top: 64px; }
         <label class="setting"><span>Sounds<br><span class="small muted">Chimes and the countdown. Turn off the silent switch to hear them.</span></span><input type="checkbox" class="switch" id="set-sound"></label>
       </div>
       <div class="card" style="gap:10px">
-        <span><strong>Preview the future</strong><br><span class="small muted">See your path and garden as if you had done more sessions. Nothing is saved, and it goes back to normal when you leave the preview.</span></span>
+        <span><strong>Preview the future</strong><br><span class="small muted">See your garden as if you had done more sessions. Nothing is saved, and it goes back to normal when you leave the preview.</span></span>
         <div class="previewbtns"><button class="soft" data-ahead="50">+50</button><button class="soft" data-ahead="75">+75</button><button class="soft" data-ahead="150">+150</button></div>
       </div>
     </div>
@@ -802,7 +767,6 @@ body.previewing .screen .wrap > header { margin-top: 64px; }
 
 <nav class="tabbar" id="tabbar">
   <button data-tab="today" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>Today</button>
-  <button data-tab="path"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 21c0-4 10-4 10-8s-10-3-10-7 5-3.5 5-3.5"/><circle cx="7" cy="21" r="0.6"/><path d="M17 3.5l1.6 1.6M18.6 3.5L17 5.1"/></svg>Path</button>
   <button data-tab="garden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 21v-8"/><path d="M12 16c-2.5 0-4.5-1.6-5-4 2.5 0 4.5 1.6 5 4zM12 15c2.2 0 4-1.4 4.5-3.5-2.2 0-4 1.4-4.5 3.5z"/><circle cx="12" cy="7" r="2"/><path d="M12 3.2v1.8M15.4 5.6l-1.4 1M8.6 5.6l1.4 1"/></svg>Garden<i class="tabdot" id="shopdot" hidden></i></button>
   <button data-tab="exercises"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/></svg>Exercises</button>
   <button data-tab="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 21c0-4.2 3.4-7 7.5-7s7.5 2.8 7.5 7"/></svg>Me</button>
@@ -1221,8 +1185,8 @@ function say(text, force) {
 }
 
 // -------------------------------------------------------------- screens & tabs
-const SCREENS = ['today', 'path', 'garden', 'exercises', 'me', 'plan', 'player', 'done'];
-const TABS = ['today', 'path', 'garden', 'exercises', 'me'];
+const SCREENS = ['today', 'garden', 'exercises', 'me', 'plan', 'player', 'done'];
+const TABS = ['today', 'garden', 'exercises', 'me'];
 let tab = 'today';
 function show(id) {
   SCREENS.forEach((s) => { $(s).hidden = s !== id; });
@@ -1236,7 +1200,7 @@ function goTab(t) {
   document.querySelectorAll('#tabbar button').forEach((b) => b.setAttribute('aria-current', b.dataset.tab === t ? 'page' : 'false'));
   show(t); refreshTab();
 }
-function refreshTab() { closeSheet(); GARDEN.refreshDot(); if (tab === 'today') renderToday(); else if (tab === 'path') renderPath(); else if (tab === 'garden') renderGarden(); else if (tab === 'me') renderMe(); else renderLibrary(); }
+function refreshTab() { closeSheet(); GARDEN.refreshDot(); if (tab === 'today') renderToday(); else if (tab === 'garden') renderGarden(); else if (tab === 'me') renderMe(); else renderLibrary(); }
 document.querySelectorAll('#tabbar button').forEach((b) => { b.onclick = () => goTab(b.dataset.tab); });
 
 const fmtDate = (ms) => new Date(ms).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -1506,16 +1470,18 @@ function renderToday() {
     box.appendChild(b);
   });
 
-  // Her garden, only when there is something waiting there.
-  const seeds = inventory().seeds, gifts = G().gifts.length, sd = $('seedcard');
-  sd.hidden = !seeds && !gifts; sd.innerHTML = '';
+  // Her garden when something is waiting there, otherwise what the next landmark brings.
+  const seeds = inventory().seeds, gifts = G().gifts.length, sd = $('seedcard'), lm = nextLandmark();
+  const waiting = seeds || gifts;
+  sd.hidden = !waiting && !lm; sd.innerHTML = '';
   if (!sd.hidden) {
-    const g = el('span', 'nb'), ic = el('span', 'ic'), txt = el('span');
-    ic.innerHTML = gifts ? GIFT_SVG : SEED_SVG; ic.style.background = 'var(--card)';
-    txt.append(el('strong', null, gifts ? (gifts === 1 ? 'A present is waiting' : `${gifts} presents are waiting`) : `${PL(seeds, 'seed', 'seeds')} to plant`), el('br'),
-      el('span', 'small muted', gifts ? 'Open it in your garden' : 'Pop into your garden'));
+    const g = el('span', 'nb'), ic = el('span', 'ic'), txt = el('span'), info = waiting ? null : landmarkInfo(lm);
+    ic.innerHTML = gifts ? GIFT_SVG : seeds ? SEED_SVG : info.svg; ic.style.background = 'var(--card)';
+    const left = lm ? PL(lm.at - total(), 'more session', 'more sessions') : '';
+    txt.append(el('strong', null, gifts ? (gifts === 1 ? 'A present is waiting' : `${gifts} presents are waiting`) : seeds ? `${PL(seeds, 'seed', 'seeds')} to plant` : `Next: ${info.title.replace(/^./, (c) => c.toLowerCase())}`), el('br'),
+      el('span', 'small muted', gifts ? 'Open it in your garden' : seeds ? 'Pop into your garden' : `In ${left}`));
     g.append(ic, txt, el('span', 'chev')); sd.appendChild(g);
-    sd.onclick = () => goTab('garden');
+    sd.onclick = () => (waiting ? goTab('garden') : landmarkSheet(lm));
   }
   renderKit();
   renderWeek();
@@ -4622,6 +4588,8 @@ const GARDEN = (() => {
   function updateSeeds() {
     const n = inventory().seeds, p = $('gd-seeds');
     $('gd-seed-txt').innerHTML = ''; $('gd-seed-txt').append(el('b', null, String(n)), document.createTextNode(n === 1 ? ' seed' : ' seeds'));
+    const lm = nextLandmark();
+    if (lm) $('gd-seed-txt').append(el('small', 'gd-next', `🎁 next in ${PL(lm.at - total(), 'session', 'sessions')}`));
     p.classList.remove('bump'); void p.offsetWidth; p.classList.add('bump');
     const b = document.querySelector('#garden [data-gd="plant"]'); b.querySelector('.gd-dot')?.remove();
     if (n > 0 || G().rare.length) b.appendChild(el('span', 'gd-dot'));
@@ -4843,68 +4811,7 @@ function sheetTop(svg, title, lines) {
   top.append(ic, info); return top;
 }
 function btn(label, cls, onclick) { const b = el('button', cls, label); b.onclick = onclick; return b; }
-
-// --------------------------------------------------------------- path tab
-function renderPath() {
-  const n = total(), box = $('trail'); box.innerHTML = '';
-  const ahead = landmarksTo(n + 400).filter((m) => m.at > n);
-  // Show a couple of landmarks ahead, so there is always something on the horizon.
-  const end = Math.max(n + 24, (ahead[2] || ahead[ahead.length - 1] || { at: 0 }).at + 2);
-  const marks = new Map(landmarksTo(end).map((m) => [m.at, m]));
-  // Positions from the bottom up: a gentle S-bend, with extra room around landmarks and chapter signs.
-  const pos = [{ y: 70, x: 50 }], chapters = [{ y: 24, level: 0 }];
-  let y = 70;
-  for (let i = 1; i <= end; i++) {
-    const prev = marks.get(i - 1);
-    if (prev?.give === 'grow') { y += 70; chapters.push({ y, level: prev.level }); }
-    y += marks.has(i) || prev ? 84 : 58;
-    pos.push({ y, x: 50 + 27 * Math.sin(i * 0.52) });
-  }
-  const Ht = y + 150, top = (p) => Ht - p.y;
-  box.style.height = `${Ht}px`;
-  const line = (pts) => pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(2)} ${top(p).toFixed(1)}`).join(' ');
-  const stroke = 'stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"';
-  box.insertAdjacentHTML('beforeend', `<svg class="line" viewBox="0 0 100 ${Ht}" preserveAspectRatio="none">` +
-    `<path d="${line(pos)}" stroke="var(--soil)" ${stroke} opacity=".55"/><path d="${line(pos.slice(0, n + 1))}" stroke="var(--stem)" ${stroke} opacity=".3"/></svg>`);
-  // Grass and the odd flower along the edges, so it feels like a walk through a garden.
-  for (let i = 2; i < end; i += 3) {
-    const t = el('span', 'tuft'), flower = i % 9 === 2;
-    t.style.left = `${i % 2 ? 3 + (i * 13) % 7 : 88 + (i * 7) % 6}%`; t.style.top = `${top(pos[i])}px`;
-    t.innerHTML = flower ? flowerSVG(['good', 'move', 'balance', 'tough'][i % 4])
-      : '<svg viewBox="0 0 18 10"><path d="M2 10 Q3 4 1 0 M7 10 Q8 3 9 0 M13 10 Q12 4 16 1" stroke="var(--stem)" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
-    if (flower) { t.style.width = '22px'; t.style.height = '28px'; }
-    box.appendChild(t);
-  }
-  chapters.forEach((c) => {
-    const ch = el('div', 'chapter'), sp = el('span'); ch.style.top = `${Ht - c.y}px`;
-    sp.append(el('small', null, `Chapter ${c.level + 1}`), document.createTextNode(cap(LEVELS[c.level].name)));
-    ch.appendChild(sp); box.appendChild(ch);
-  });
-  const start = el('button', 'stone done', '🌱'); start.style.left = '50%'; start.style.top = `${top(pos[0])}px`;
-  start.setAttribute('aria-label', 'Start of the path'); start.onclick = () => toastHome('Where it all began. Every session is one more step.');
-  box.appendChild(start);
-  for (let i = 1; i <= end; i++) {
-    const m = marks.get(i), done = i <= n, next = i === n + 1, early = !done && m && !m.gate && alreadyBought(m);
-    const s = el('button', 'stone' + (done ? ' done' : '') + (next ? ' next' : '') + (m ? ` big${m.gate ? ' gate' : ''}${done || early ? ' got' : ' ahead'}` : ''));
-    s.style.left = `${pos[i].x}%`; s.style.top = `${top(pos[i])}px`;
-    if (m) {
-      const info = landmarkInfo(m), tag = el('div', 'tag');
-      s.innerHTML = info.svg; s.setAttribute('aria-label', `Session ${i}: ${info.title}`); s.onclick = () => landmarkSheet(m);
-      tag.style.top = `${top(pos[i])}px`;
-      if (pos[i].x < 50) tag.style.left = `calc(${pos[i].x}% + 44px)`; else { tag.style.right = `calc(${100 - pos[i].x}% + 44px)`; tag.style.textAlign = 'right'; }
-      tag.append(el('strong', null, info.title), el('span', null, done ? `Session ${i} · reached` : early ? `Session ${i} · unlocked early` : `Session ${i} · ${info.sub.toLowerCase()}`));
-      box.appendChild(tag);
-    } else {
-      s.textContent = String(i); s.setAttribute('aria-label', `Session ${i}${done ? ', done' : ''}`);
-      s.onclick = () => toastHome(done ? `Session ${i} · ${fmtDate(state.sessions[i - 1]?.start || now())}` : next ? 'Your next session. Start it from Today.' : `Session ${i}. ${PL(i - n, 'session', 'sessions')} to go.`);
-    }
-    box.appendChild(s);
-  }
-  const you = el('div', 'you' + (marks.has(n) ? ' above' : pos[n].x >= 50 ? ' left' : ''), n ? 'You are here' : 'Start here'); you.style.left = `${pos[n].x}%`; you.style.top = `${top(pos[n])}px`; box.appendChild(you);
-  const fog = el('div', 'fog'); fog.appendChild(el('span', null, 'More to discover…')); box.appendChild(fog);
-  $('p-sum').textContent = n ? `${PL(n, 'session', 'sessions')} walked${ahead[0] ? ` · next landmark in ${PL(ahead[0].at - n, 'session', 'sessions')}` : ''}` : 'One stepping stone for every session';
-  requestAnimationFrame(() => { const scr = $('path'); scr.scrollTop = box.offsetTop + top(pos[n]) - scr.clientHeight * 0.6; });
-}
+// What the next landmark brings, from the Today card.
 function landmarkSheet(m) {
   const info = landmarkInfo(m), n = total(), done = m.at <= n;
   const early = !done && !m.gate && alreadyBought(m);
@@ -5559,7 +5466,7 @@ function renderDone(rec, visits = [], moved = { ups: [], downs: [], choice: null
     (gifts ? `<p class="news">🎁 ${gifts === 1 ? 'A present is' : `${gifts} presents are`} waiting in your garden</p>` : '');
   $('done-plant').textContent = gifts ? '🎁 Open your present' : '🌱 Plant your seed';
   const today = kindsOn(Date.now()), left = SNACK_ORDER.filter((k) => !today.has(k)), extra = !SNACKS[rec.kind] || sessionsOnDay(Date.now()).filter((s) => s.kind === rec.kind).length > 1;
-  $('done-sum').textContent = 'One more step along your path. ' +
+  $('done-sum').textContent = 'Another one done. ' +
     (left.length ? `${PL(left.length, 'more', 'more')} today: ${left.map((k) => SNACKS[k].name).join(' and ')}.` : extra ? 'An extra one today. Lovely.' : 'That is all three today. A full day!');
   const ds = $('donestats'); ds.innerHTML = '';
   [[`${mins(rec.secs)}`, mins(rec.secs) === 1 ? 'minute moving' : 'minutes moving'], [`${rec.done.length}`, 'exercises'],
@@ -5569,7 +5476,7 @@ function renderDone(rec, visits = [], moved = { ups: [], downs: [], choice: null
   renderProgress(moved);
   const nx = $('done-next'); nx.innerHTML = '';
   const lm = nextLandmark(), nb = nextBadge();
-  if (lm) nx.append(el('span', 'kicker', 'Next on your path'), el('strong', null, `${landmarkInfo(lm).title} in ${PL(lm.at - total(), 'session', 'sessions')}`));
+  if (lm) nx.append(el('span', 'kicker', 'Coming up'), el('strong', null, `${landmarkInfo(lm).title} in ${PL(lm.at - total(), 'session', 'sessions')}`));
   if (nb) { const [a, t2] = prog(nb, stats()); nx.append(el('span', 'small muted', `Next badge: ${lvName(nb)} · ${a} of ${t2}`)); }
   nx.hidden = !lm && !nb;
   const ul = $('done-list'); ul.innerHTML = '';
@@ -5679,7 +5586,7 @@ function revealInfo(item) {
   }
   if (item.reward) {
     const info = landmarkInfo(item.reward), wrapped = info.svg === GIFT_SVG;
-    return { cls: 'rv-ic', ic: info.svg, kicker: 'Found on your path', title: wrapped ? 'A present for your garden' : info.title,
+    return { cls: 'rv-ic', ic: info.svg, kicker: `Session ${item.reward.at}`, title: wrapped ? 'A present for your garden' : info.title,
       text: wrapped ? 'It is waiting in your garden. Open it there to see what is inside.' : info.text };
   }
   if (item.daily) {
