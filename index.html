@@ -2270,8 +2270,8 @@ const GARDEN = (() => {
       for (let q = 0; q < 4; q++) k.ball('#5a8f3e', [rnd(-0.15, 0.15), 0.05, rnd(-0.15, 0.15)], [0.12, 0.04, 0.05], [0, rnd(TAU), 0]);
     } },
     dogbowl: { on: ['patio', 'grass', 'path'], make: (k) => {
+      // The ball beside it is its own mesh (fillObj, BALL_AT), so she can throw it for the dog.
       k.add(GEO.bowl, '#d9473d', [0, 0, 0], [0, 0, 0], [0.15, 0.13, 0.15]); k.cyl('#86d0de', [0, 0.065, 0], [0.11, 0.008, 0.11]);
-      k.ball('#d7e85a', [0.24, 0.055, 0.1], 0.055); k.add(GEO.tor, '#ffffff', [0.24, 0.055, 0.1], [0, 0.5, 0.3], 0.052);
       k.cyl('#f4ecdc', [-0.22, 0.02, 0.12], [0.02, 0.18, 0.02], [0, 0, Math.PI / 2]); for (const x of [-0.31, -0.13]) for (const z of [0.1, 0.14]) k.ball('#f4ecdc', [x, 0.025, z], 0.025);
     } },
     dogbed: { on: ['grass', 'patio', 'path'], make: (k) => {
@@ -2286,7 +2286,8 @@ const GARDEN = (() => {
       const W = '#c9935c', R = '#c4513c', D = '#8e5f3a';
       k.box(tint(W, -0.1), [0, 0.03, 0.02], [0.74, 0.06, 0.7]);
       k.box(W, [0, 0.25, 0], [0.66, 0.42, 0.62]);
-      for (const y of [0.12, 0.22, 0.32, 0.42]) k.box(tint(W, -0.06), [0, y, 0.312], [0.66, 0.008, 0.01]);
+      // Plank lines either side of the doorway, so they don't run across the dog lying in it.
+      for (const y of [0.12, 0.22, 0.32, 0.42]) for (const s of [-1, 1]) k.box(tint(W, -0.06), [s * 0.235, y, 0.312], [0.19, 0.008, 0.01]);
       k.box(R, [-0.19, 0.57, 0], [0.47, 0.05, 0.72], [0, 0, 0.72]); k.box(R, [0.19, 0.57, 0], [0.47, 0.05, 0.72], [0, 0, -0.72]); k.box(tint(R, -0.12), [0, 0.74, 0], [0.06, 0.05, 0.74]);
       k.box(W, [0, 0.52, 0.3], [0.5, 0.2, 0.02], [0, 0, 0]);
       k.box('#2b201a', [0, 0.17, 0.312], [0.24, 0.26, 0.01]); k.ball('#2b201a', [0, 0.3, 0.312], [0.12, 0.12, 0.005]);
@@ -2358,8 +2359,20 @@ const GARDEN = (() => {
   };
   // A few things are drawn bigger than they were built, so they look right next to the gardener.
   const DSIZE = { bench: 1.25, birdbath: 1.2, sundial: 1.2, wheelbarrow: 1.25, fountain: 1.15, lantern: 1.15, pots: 1.15, birdtable: 1.15, catbed: 1.2,
-    feeder: 1.1, wateringcan: 1.2, beehive: 1.15, dogbowl: 1.15 };
+    feeder: 1.1, wateringcan: 1.2, beehive: 1.15, dogbowl: 1.15, kennel: 1.4 };
   const DS = (k) => DSIZE[k] || 1;
+  // The dog's toys, each centred on its middle; r is how high the middle sits when it lies on the ground.
+  const TOYS = {
+    ball: { r: 0.055, make: (k) => { k.ball('#d7e85a', [0, 0, 0], 0.055); k.add(GEO.tor, '#ffffff', [0, 0, 0], [0, 0.5, 0.3], 0.052); } },
+    blue: { r: 0.05, make: (k) => k.ball('#4a74d9', [0, 0, 0], 0.05) },
+    rope: { r: 0.035, make: (k) => {
+      k.cyl('#e9dcc4', [0, 0, 0], [0.022, 0.24, 0.022], [0, 0, Math.PI / 2]); k.cyl('#d1495b', [0, 0, 0], [0.024, 0.06, 0.024], [0, 0, Math.PI / 2]);
+      for (const x of [-0.1, 0.1]) k.ball('#e9dcc4', [x, 0, 0], 0.035);
+    } },
+    bone: { r: 0.03, make: (k) => { k.cyl('#f2c94c', [0, 0, 0], [0.02, 0.16, 0.02], [0, 0, Math.PI / 2]); for (const x of [-0.08, 0.08]) for (const z of [-0.018, 0.018]) k.ball('#f2c94c', [x, 0, z], 0.026); } },
+  };
+  // Where the ball sits beside the bowl and ball, before the bowl's own sizing.
+  const BALL_AT = [0.24, 0.055, 0.1];
   // Built into a garden's layout and never in the tray: sheds, water butts, compost bins, bean canes, vegetables, rocks and a scarecrow.
   const XB = {
     shed: (k) => {
@@ -2428,6 +2441,9 @@ const GARDEN = (() => {
   const decorGeo = (k, sea) => (isTree(k) || k === 'shrub'
     ? cached(`tr:${k}:${sea}`, (kit) => (k === 'shrub' ? shrub(kit, sea) : tree(kit, k, sea, k === 'oak' ? 1.25 : 1)))
     : cached(`dc:${k}`, (kit) => { kit.push([0, 0, 0], [0, 0, 0], DS(k)); (XB[k] || DC[k].make)(kit); kit.pop(); }));
+  // ws is the toy's size in the garden, kept when the dog picks it up (his body is scaled up).
+  const toyMesh = (t) => { const m = mesh(cached(`toy:${t}`, TOYS[t].make)); m.userData.toy = t; m.userData.ws = 1; return m; };
+  const ballMesh = () => { const D = DS('dogbowl'), m = toyMesh('ball'); m.position.set(...BALL_AT.map((v) => v * D)); m.scale.setScalar(D); m.userData.ws = D; return m; };
   // A little koi, nose towards -z so it swims forwards as its ring turns.
   const koiGeo = (c, n) => cached(`koi:${c}`, (k) => {
     k.ball(c, [0, 0, 0], [0.045, 0.025, 0.1]); k.ball(c, [0, 0, 0.12], [0.012, 0.03, 0.045], [0, 0, 0]);
@@ -3162,7 +3178,7 @@ const GARDEN = (() => {
     const geo = new THREE.CircleGeometry(1, 32); geo.rotateX(-Math.PI / 2);
     const water = new THREE.Mesh(geo, own(new THREE.MeshStandardMaterial({ color: st.water[1], roughness: 0.1 }))); water.scale.set(pond.rx, 1, pond.rz); water.position.set(ox + pond.x, 0.03, oz + pond.z); areaG.add(water);
     built.forEach((b) => { const m = mesh(decorGeo(b.k, season())); m.position.set(ox + tx(b.i), TOP[t[b.i][b.j]], oz + tz(b.j)); areaG.add(m); });
-    G().items3.filter((it) => areaOf(it) === a && DC[it.k] && !FL[it.k]).forEach((it) => { const m = mesh(decorGeo(it.k, season())); m.position.set(ox + tx(it.i), TOP[t[it.i]?.[it.j]] || 0, oz + tz(it.j)); m.rotation.y = it.ry || 0; areaG.add(m); });
+    G().items3.filter((it) => areaOf(it) === a && DC[it.k] && !FL[it.k]).forEach((it) => { const m = mesh(decorGeo(it.k, season())); m.position.set(ox + tx(it.i), TOP[t[it.i]?.[it.j]] || 0, oz + tz(it.j)); m.rotation.y = it.ry || 0; if (it.k === 'dogbowl') m.add(ballMesh()); areaG.add(m); });
     if (!open) for (let q = 0; q < 9; q++) {
       const m = new THREE.Sprite(own(new THREE.SpriteMaterial({ map: glowTex, color: '#ffffff', transparent: true, opacity: 0.85, depthWrite: false })));
       m.position.set(ox + rnd(-4.5, 4.5), rnd(0.6, 2.2), oz + rnd(-4.5, 4.5)); m.scale.setScalar(rnd(5, 8)); areaG.add(m);
@@ -3339,6 +3355,11 @@ const GARDEN = (() => {
       const m = mesh(decorGeo(k, season())); g.add(m);
       if (isTree(k) || k === 'shrub') { m.userData.ph = rnd(TAU); m.userData.soft = 1; g.userData.sway.push(m); }
       if (k === 'koi') { const sp = koiRing(); g.add(sp); g.userData.spin = sp; }
+      // The ball, with a big invisible target round it so it is easy to tap.
+      if (k === 'dogbowl') {
+        const b = ballMesh(); g.add(b); g.userData.ball = b;
+        const hb = new THREE.Mesh(new THREE.SphereGeometry(0.26, 8, 6), new THREE.MeshBasicMaterial()); hb.visible = false; hb.position.copy(b.position); hb.position.y += 0.08; hb.userData.bowl = g; g.add(hb); g.userData.ballHit = hb;
+      }
       if (k === 'lantern') { const glass = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.13, 0.11), lampMat); glass.position.set(0, 0.835, 0); g.add(glass); }
       if (DC[k]?.glass) { const gl = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.58, 0.66), glassMat); gl.position.y = 0.34; g.add(gl); }
       addHit(g, 0.8, isTree(k) ? 1.9 : 0.7);
@@ -3394,6 +3415,7 @@ const GARDEN = (() => {
     if (settle()) saveSettings();
     [...objs].forEach(dropObj); [...giftObjs].forEach((g) => { scene.remove(g); removeFrom(pickables, g); }); giftObjs.length = 0;
     Object.values(animals).forEach((a) => { scene.remove(a.g); removeFrom(pickables, a.g); }); animals = {};
+    loose.forEach((m) => m.removeFromParent()); loose.length = 0;
     BUILTIN.forEach((b) => makeObj(b, true));
     here().filter((it) => known(it.k)).forEach((it) => makeObj(it)); giftsHere().forEach(makeGiftObj);
     spawnAnimals(); spawnHero(); placeLampLights();
@@ -3432,13 +3454,113 @@ const GARDEN = (() => {
     }
     return V(0, 0, 2);
   }
+  // ---------------------------------------------------------- the dog's own things
+  // He works through a little plan of steps: go somewhere ({ go }), stay a while in a pose ({ wait, pose, face })
+  // or do something at once ({ fn }). Toys out of the basket and the thrown ball are in loose until the garden is rebuilt.
+  const loose = [], UP = V(0, 1, 0);
+  const at = (o, x, z) => { const p = o.position.clone().add(V(x, 0, z).applyAxisAngle(UP, o.rotation.y)); p.y = topAt(p.x, p.z); return p; };
+  // A spot r from c on the side he is coming from, so his nose ends up over it.
+  function beside(c, from, r) {
+    const d = V(from.x - c.x, 0, from.z - c.z); if (d.lengthSq() < 1e-4) { const q = rnd(TAU); d.set(Math.sin(q), 0, Math.cos(q)); }
+    const p = c.clone().add(d.normalize().multiplyScalar(r)); p.y = topAt(p.x, p.z); return p;
+  }
+  // Held at the front of his muzzle; his body is scaled up, so the toy is scaled down to keep its size.
+  function hold(a, m) { a.body.add(m); m.position.set(0, 0.258, 0.31); m.rotation.set(0, 0, 0); m.scale.setScalar(m.userData.ws / WL3[a.id].scale); m.userData.landed = false; }
+  const restAt = (m, p) => V(p.x, topAt(p.x, p.z) + TOYS[m.userData.toy].r * m.userData.ws, p.z);
+  // A toy or the ball flying through the air in an arc, tumbling as it goes.
+  function fling(m, to, dur, h, done) {
+    scene.attach(m); const from = m.position.clone(), r0 = m.rotation.y, roll = rnd(6, 10);
+    anims.push({ t: 0, dur, fn: (x) => { m.position.lerpVectors(from, to, x); m.position.y += Math.sin(x * Math.PI) * h; m.rotation.set(x * roll, r0 + x * 2, 0); },
+      done: () => { m.rotation.set(0, m.rotation.y, 0); done?.(); } });
+  }
+  // He tosses the toy in his mouth a little way ahead, ready to pounce on it.
+  function toss(a, m) {
+    const ang = a.g.rotation.y + rnd(-0.6, 0.6), d = rnd(0.9, 1.5), x = a.pos.x + Math.sin(ang) * d, z = a.pos.z + Math.cos(ang) * d;
+    fling(m, restAt(m, walkable(x, z) ? V(x, 0, z) : groundSpot(a.pos, 1.2)), 0.6, 0.6, () => { m.userData.landed = true; if (m.userData.toy === 'bone') sound('squeak'); });
+  }
+  // A play bow, then a dash to wherever it lands, and he picks it up.
+  const chase = (m, fast) => [{ wait: 0.5, pose: 'bow' }, { go: (a) => beside(m.position, a.pos, 0.45), fast, follow: true, gate: () => m.userData.landed },
+    { wait: 0.35, pose: 'peck' }, { fn: (a) => hold(a, m) }];
+  function dogPlan(a, o) {
+    const k = o.userData.k, c = o.position.clone();
+    if (k === 'kennel') {
+      // In through the door, turn round inside and lie down with his head out of the doorway.
+      const door = 0.312 * DS('kennel');
+      return [{ go: () => at(o, 0, door + 0.9) }, { go: () => at(o, 0, 0) }, { fn: (a) => { a.den = o; } }, { wait: 0.7, face: at(o, 0, 3) },
+        { go: () => at(o, 0, door - 0.22) }, { wait: rnd(18, 32), pose: 'nap' }, { go: () => at(o, 0, door + 0.8) }, { fn: (a) => { a.den = null; } }];
+    }
+    if (k === 'dogbowl') {
+      const splash = () => burst(c.clone().add(V(0, 0.12, 0)), 8, { colors: ['#86d0de', '#cfeef5', '#ffffff'], speed: 0.25, up: 0.9, size: 0.025, life: 0.6 });
+      return [{ go: (a) => beside(c, a.pos, 0.47) }, { wait: 0.35, face: c }, { fn: splash }, { wait: rnd(2, 3), pose: 'lap' }, { fn: splash }, { wait: rnd(2, 3), pose: 'lap' }];
+    }
+    if (k === 'dogtoys') {
+      // He rummages in the basket, picks out a toy, shakes it, tosses it and pounces on it a few times, has a chew and puts it back.
+      const m = toyMesh(pick(Object.keys(TOYS))), back = (a) => beside(c, a.pos, 0.5), play = [];
+      for (let q = 0, n = 2 + Math.floor(rnd(2)); q < n; q++) play.push({ fn: (a) => toss(a, m) }, ...chase(m, 2.1), { wait: rnd(0.7, 1.2), pose: 'shake' });
+      return [{ go: back }, { wait: 0.35, face: c }, { wait: 1.4, pose: 'peck' },
+        { fn: (a) => { scene.add(m); loose.push(m); a.toy = m; hold(a, m); } }, { go: () => groundSpot(c, 1.6), fast: 1.3 }, { wait: 1.2, pose: 'shake' }, ...play,
+        { fn: () => m.position.set(0, 0.13, 0.33) }, { wait: rnd(5, 8), pose: 'chew' }, { fn: (a) => hold(a, m) },
+        { go: back }, { wait: 0.35, face: c }, { wait: 0.6, pose: 'peck' }, { fn: (a) => { m.removeFromParent(); removeFrom(loose, m); a.toy = null; } }];
+    }
+    // The bed: round and round, then flop down.
+    if (k === 'dogbed') return [{ go: () => c.clone().add(V(...USE.dogbed.at)) }, { wait: 1.4, pose: 'spin' }, { wait: rnd(14, 26), pose: 'nap' }];
+    return [{ go: () => c.clone().add(V(...USE[k].at).multiplyScalar(DS(k)).applyAxisAngle(UP, o.rotation.y)) }, { wait: rnd(3, 6) }];
+  }
+  function nextStep(a) {
+    while (a.plan?.length) {
+      const s = a.plan.shift();
+      a.nap = false; a.peck = false; a.pose = null; a.faceTo = null; a.fast = 1; a.follow = null; a.gate = null; a.going = false;
+      if (s.fn) { s.fn(a); continue; }
+      if (s.go) { a.tgt = s.go(a); a.going = true; a.fast = s.fast || 1; a.follow = s.follow ? s.go : null; a.gate = s.gate || null; return true; }
+      a.wait = s.wait; a.pose = s.pose || null; a.faceTo = s.face || null; a.nap = s.pose === 'nap' || s.pose === 'chew'; a.peck = s.pose === 'peck';
+      if (s.pose === 'nap') speak(a.id, 'zzz…');
+      return true;
+    }
+    return false;
+  }
+  // What next once a wait is over: the rest of his plan (or the walk a tap paused), else somewhere new.
+  function carryOn(a) {
+    if (a.plan && a.going && a.tgt) return;
+    if (a.plan && nextStep(a)) return;
+    a.plan = null; a.tgt = nextTarget(a);
+  }
+  // Dropping whatever he was doing for something better (the ball!): a toy he had is left on the grass, and out of the kennel first.
+  function startPlan(a, plan) {
+    if (a.toy) {
+      const m = a.toy; a.toy = null;
+      if (m.parent !== scene) { scene.attach(m); m.position.copy(restAt(m, m.position)); m.rotation.set(0, m.rotation.y, 0); m.scale.setScalar(m.userData.ws); }
+      setTimeout(() => popOut(m, () => { m.removeFromParent(); removeFrom(loose, m); }), 2500);
+    }
+    const out = a.den ? [{ go: () => at(a.den, 0, 0.312 * DS('kennel') + 0.8), fast: 1.6 },{ fn: (b) => { b.den = null; } }] : [];
+    a.plan = [...out, ...plan]; a.wait = 0; a.pitch = 0; a.body.rotation.y = 0; a.body.rotation.z = 0; a.g.visible = true; nextStep(a);
+  }
+  // She taps the ball by the bowl: it flies off across the garden, and he races after it and brings it back.
+  function throwBall(o) {
+    const home = o.userData.ball, a = animals.dog;
+    if (!home?.visible) return;
+    const m = ballMesh(), homeAt = () => home.getWorldPosition(V());
+    m.position.copy(homeAt()); scene.add(m); loose.push(m); home.visible = false;
+    let L = null; const ang = rnd(TAU);
+    for (let q = 0; q < 12 && !L; q++) { const g2 = ang + q * 0.55, d = rnd(2, 3.5), x = o.position.x + Math.sin(g2) * d, z = o.position.z + Math.cos(g2) * d; if (walkable(x, z)) L = V(x, 0, z); }
+    L = restAt(m, L || groundSpot(o.position, 2.5));
+    const dir = L.clone().sub(m.position).setY(0).normalize(), L2 = restAt(m, L.clone().addScaledVector(dir, 0.45));
+    fling(m, L, 0.9, 1.3, () => { sound('rep'); fling(m, walkable(L2.x, L2.z) ? L2 : L, 0.35, 0.15, () => { m.userData.landed = true; }); });
+    sound('go');
+    const done = () => { m.removeFromParent(); removeFrom(loose, m); home.visible = true; };
+    if (!a) { setTimeout(() => fling(m, homeAt(), 0.6, 0.6, done), 2500); return; }
+    speak('dog', 'woof!'); sound('woof');
+    startPlan(a, [...chase(m, 2.4),
+      { go: (b) => beside(objs.includes(o) ? homeAt() : b.pos, b.pos, 0.47), fast: 1.4 }, { wait: 0.35, face: homeAt() }, { wait: 0.5, pose: 'peck' },
+      { fn: (b) => { done(); const [x, y] = screenOf(b.g.position); hearts(x, y - 30); speak('dog', 'woof!', 'Again?'); sound('woof'); } }, { wait: 2.5, pose: 'wag' }]);
+  }
   function nextTarget(a) {
     const W = WL3[a.id], items = friendItems(a.id).map((x) => x.item);
     a.nap = false; a.peck = false; a.hide = false;
-    // Its own things, when she has put them out: it goes to one and uses it.
+    // Its own things, when she has put them out: it goes to one and uses it. The dog has a plan for each of his.
     const mine = objs.filter((o) => items.includes(o.userData.k));
     if (mine.length && Math.random() < 0.55) {
       const o = pick(mine), u = USE[o.userData.k];
+      if (a.id === 'dog') { a.plan = dogPlan(a, o); nextStep(a); return a.tgt; }
       if (u.act === 'nap') a.nap = true; else if (u.act === 'peck') a.peck = true; else if (u.act === 'hide') a.hide = true;
       return o.position.clone().add(V(...u.at).multiplyScalar(DS(o.userData.k)).applyAxisAngle(V(0, 1, 0), o.rotation.y));
     }
@@ -3481,18 +3603,29 @@ const GARDEN = (() => {
   }
   // Legs: swing through the stride while walking, ease back to standing when still, and fold to lie down for a nap.
   // The tail wags faster when walking (the dog's more than the cat's).
+  // Nose down (a.pitch: drinking, rummaging, a play bow) tips the body forward over the back legs,
+  // and the front legs bend so the paws stay on the ground.
   function poseLegs(a, dt, t, walking) {
-    const e = Math.min(1, dt * 8), lie = a.nap && !walking, cat = a.id === 'cat';
+    const e = Math.min(1, dt * 8), lie = a.nap && !walking, cat = a.id === 'cat', th = walking || lie ? 0 : a.pitch || 0;
+    const bk = a.legs.find((L) => !L.front), fr = a.legs.find((L) => L.front), hip = bk.hip, pz = bk.p.position.z, sep = fr.p.position.z - pz;
+    const bend = th ? Math.acos(Math.max(0.05, (hip - sep * Math.sin(th)) / hip)) : 0;
     a.legs.forEach((L) => {
-      const want = walking ? Math.sin(a.gait + L.ph) * (cat ? 0.5 : 0.65) : lie ? (L.front ? -1.35 : 1.35) : 0;
+      const want = walking ? Math.sin(a.gait + L.ph) * (cat ? 0.5 : 0.65) : lie ? (L.front ? -1.35 : 1.35) : L.front ? -th - bend : -th;
       L.p.rotation.x += (want - L.p.rotation.x) * (walking ? 1 : e);
     });
-    const drop = lie ? -a.legs[0].hip * 0.78 : walking ? Math.abs(Math.cos(a.gait)) * 0.012 : 0;
-    a.body.position.y += (drop - a.body.position.y) * (walking ? 1 : e);
+    a.body.rotation.x += (th - a.body.rotation.x) * e;
+    const drop = lie ? -hip * 0.78 : walking ? Math.abs(Math.cos(a.gait)) * 0.012 : 0, r = a.body.rotation.x, c = Math.cos(r), s = Math.sin(r);
+    a.drop = (a.drop || 0) + (drop - (a.drop || 0)) * (walking ? 1 : e);
+    // Tipping about the back hips, so they stay put.
+    a.body.position.y = a.drop + hip - (hip * c - pz * s) + (a.lift || 0); a.body.position.z = pz - (hip * s + pz * c);
     if (a.tail) {
-      a.tail.rotation.y = Math.sin(t * (walking ? (cat ? 3 : 9) : lie ? 0.8 : cat ? 1.5 : 4)) * (lie ? 0.15 : cat ? 0.35 : 0.5);
+      const happy = ['bow', 'shake', 'wag'].includes(a.pose) || (walking && a.fast > 1);
+      a.tail.rotation.y = Math.sin(t * (happy ? 14 : walking ? (cat ? 3 : 9) : lie ? 0.8 : cat ? 1.5 : 4)) * (happy ? 0.6 : lie ? 0.15 : cat ? 0.35 : 0.5);
       a.tail.rotation.x = cat ? (walking ? -0.25 : 0) : 0;
     }
+  }
+  function turnTo(a, p, dt) {
+    let dy = Math.atan2(p.x - a.pos.x, p.z - a.pos.z) - a.g.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); a.g.rotation.y += dy * Math.min(1, dt * 8);
   }
   function stepAnimal(a, dt, t) {
     const W = WL3[a.id], g = a.g;
@@ -3501,24 +3634,38 @@ const GARDEN = (() => {
     if (a.wait > 0) {
       a.wait -= dt;
       if (legged) {
+        if (a.faceTo) turnTo(a, a.faceTo, dt);
+        const p = a.pose;
+        a.pitch = p === 'bow' ? 0.42 : p === 'lap' ? 0.27 + Math.sin(t * 12) * 0.03 : a.peck ? 0.3 + Math.max(0, Math.sin(t * 6)) * 0.08 : 0;
         poseLegs(a, dt, t, false);
-        if (a.peck) a.body.rotation.x = Math.max(0, Math.sin(t * 6)) * 0.3;
-        else a.body.scale.set(1, 1 + Math.sin(t * 2) * 0.015, 1);
-        if (a.wait <= 0) { g.visible = true; a.tgt = nextTarget(a); a.body.rotation.x = 0; a.body.scale.set(1, 1, 1); }
+        if (p === 'shake') a.body.rotation.y = Math.sin(t * 20) * 0.35;
+        else if (p === 'spin') g.rotation.y += dt * 5;
+        else if (p === 'chew') a.body.rotation.z = Math.sin(t * 6) * 0.05;
+        else if (!a.pitch) a.body.scale.set(1, 1 + Math.sin(t * 2) * 0.015, 1);
+        if (a.wait <= 0) { g.visible = true; a.pitch = 0; a.body.rotation.y = 0; a.body.rotation.z = 0; a.body.scale.set(1, 1, 1); carryOn(a); }
         return;
       }
       if (W.fly && !a.nap) g.position.y = a.pos.y + Math.sin(t * 3 + a.pos.x) * 0.04;
       if (W.swim) g.position.y = a.pos.y + Math.sin(t * 1.6 + a.pos.x) * 0.01;
       if (a.peck) a.body.rotation.x = Math.max(0, Math.sin(t * 9)) * 0.5;
       if (a.nap) a.body.scale.set(1.05, 0.72, 1); else a.body.scale.set(1, 1 + Math.sin(t * 2) * 0.02, 1);
-      if (a.wait <= 0) { g.visible = true; a.tgt = nextTarget(a); a.body.rotation.x = 0; a.body.scale.set(1, 1, 1); }
+      if (a.wait <= 0) { g.visible = true; a.body.rotation.x = 0; a.body.scale.set(1, 1, 1); carryOn(a); }
       return;
     }
     if (!a.tgt) a.tgt = nextTarget(a);
-    const d = a.tgt.clone().sub(a.pos), dist = d.length(), step = W.speed * dt;
-    if (dist > 0.02) { let dy = Math.atan2(d.x, d.z) - g.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); g.rotation.y += dy * Math.min(1, dt * 8); }
+    if (a.follow) a.tgt = a.follow(a);
+    // On the ground, only how far across counts: a path is a touch higher than the grass, and he'd never quite get there.
+    const d = a.tgt.clone().sub(a.pos); if (!W.fly && !W.swim && a.tgt.y <= 0.2) d.y = 0;
+    const dist = d.length(), step = W.speed * dt * (a.fast || 1);
+    if (dist > 0.02) turnTo(a, a.tgt, dt);
     if (dist <= step) {
       a.pos.copy(a.tgt); g.position.copy(a.pos);
+      // On a plan: wait here if the toy or ball hasn't landed yet, else on to the next step.
+      if (a.plan) {
+        if (a.gate && !a.gate()) { if (legged) poseLegs(a, dt, t, false); return; }
+        a.going = false; if (!nextStep(a)) { a.plan = null; a.wait = rnd(1, 2.5); }
+        return;
+      }
       a.wait = a.nap ? rnd(15, 30) : a.hide ? rnd(6, 14) : a.peck ? rnd(2.5, 5) : W.fly ? rnd(1.2, 3.5) : rnd(1.5, 5);
       if (a.nap) speak(a.id, 'zzz…');
       // Popping inside its house for a while. Tapping the house still says hello.
@@ -3898,7 +4045,7 @@ const GARDEN = (() => {
       tr.render(ts, tc); thumbs[key] = tr.domElement.toDataURL(); ts.remove(obj);
     };
     Object.keys(FL).forEach((k) => shoot('fl:' + k, mesh(flowerGeo(k))));
-    Object.keys(DC).forEach((k) => { let o = mesh(decorGeo(k, 'summer')); if (k === 'koi') { const g = new THREE.Group(); g.add(o, koiRing()); o = g; } shoot('dc:' + k, o); });
+    Object.keys(DC).forEach((k) => { let o = mesh(decorGeo(k, 'summer')); if (k === 'koi') { const g = new THREE.Group(); g.add(o, koiRing()); o = g; } if (k === 'dogbowl') { const g = new THREE.Group(); g.add(o, ballMesh()); o = g; } shoot('dc:' + k, o); });
     Object.keys(WL3).forEach((k) => { const { g } = buildAnimal(k); g.scale.setScalar(1); shoot('wl:' + k, g); });
     shoot('gift', buildGift());
     const sk = new Kit(); sk.ball('#6e4a33', [0, 0, 0], [0.2, 0.06, 0.2]); sk.cyl(STEM, [0, 0.08, 0], [0.012, 0.14, 0.012]); for (const s of [-1, 1]) sk.ball('#7cc35a', [s * 0.05, 0.15, 0], [0.06, 0.015, 0.03], [0, 0, -s * 0.4]);
@@ -4259,6 +4406,7 @@ const GARDEN = (() => {
     const add = (label, fn, soft) => { const b = el('button', 'gd-btn' + (soft ? ' soft' : ''), label); b.onclick = (e) => { e.stopPropagation(); fn(); }; row.appendChild(b); };
     add('Move', () => { deselect(); startTool({ type: 'move', item: it }); });
     if (fl && lvlOf(ageOf(it)) >= 2) add('Pick 💐', () => pickBouquet(g, it));
+    if (it.k === 'dogbowl' && g.userData.ball?.visible) add('Throw the ball 🎾', () => { deselect(); throwBall(g); });
     if (!fl) add('Turn', () => { it.ry = ((it.ry || 0) + Math.PI / 2) % TAU; saveSettings(); const r0 = g.rotation.y; anims.push({ t: 0, dur: 0.3, fn: (x) => { g.rotation.y = r0 + (Math.PI / 2) * easeOutBack(x); } }); sound('rep'); }, true);
     add(fl ? 'Dig up' : 'Put away', () => {
       G().items3 = its().filter((x) => x !== it);
@@ -4363,6 +4511,12 @@ const GARDEN = (() => {
         tapTile(i, j); return;
       }
       const hit = ray.intersectObjects(pickables, true)[0];
+      // The ball by the dog's bowl: a tap throws it (unless the dog or the gardener is standing in front of it).
+      const bh = ray.intersectObjects(objs.filter((o) => o.userData.ball?.visible).map((o) => o.userData.ballHit))[0];
+      if (bh) {
+        let o = hit?.object; while (o && !o.userData.animal && !o.userData.hero) o = o.parent;
+        if (!o || hit.distance > bh.distance) { deselect(); throwBall(bh.object.userData.bowl); return; }
+      }
       if (hit) {
         let o = hit.object; while (o && !o.userData.gift && !o.userData.animal && !o.userData.item && !o.userData.hero && !o.userData.bridge && !o.userData.wall) o = o.parent;
         if (o?.userData.wall) { deselect(); openWall(); return; }
@@ -4373,7 +4527,7 @@ const GARDEN = (() => {
           const id = o.userData.animal, w = wildState(id), a = animals[id]; deselect();
           speak(id, WILD[id].says, w.home ? wildName(id) : `A visiting ${WILD[id].name.toLowerCase()}`);
           const [x, y] = screenOf(o.position); hearts(x, y - 30); sound(WILD[id].noise);
-          a.wait = Math.max(a.wait, 2); anims.push({ t: 0, dur: 0.4, fn: (x) => { a.body.position.y = Math.sin(x * Math.PI) * 0.06; } });
+          a.wait = Math.max(a.wait, 2); anims.push({ t: 0, dur: 0.4, fn: (x) => { if (a.legs.length) a.lift = Math.sin(x * Math.PI) * 0.06; else a.body.position.y = Math.sin(x * Math.PI) * 0.06; } });
           if (canGive(id)) setTimeout(() => openCard({ img: thumbs['bq:' + G().bouq[0].k], kicker: wildName(id), title: 'Give a bouquet?', text: `${wildName(id)} would love some flowers, and might leave you a present.`,
             buttons: [{ label: 'Give a bouquet 💐', fn: () => giveBouquet(id) }, { label: 'Not now' }] }), 700);
           return;
