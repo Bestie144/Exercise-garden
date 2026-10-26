@@ -3080,11 +3080,11 @@ const GARDEN = (() => {
   };
   // How each garden is dressed: its edge, bed edging, paths, patio, pond rim, lawn and the earth it floats on.
   const STYLE = {
-    home: { border: 'picket', edge: 'wood', path: 'stones', patio: 'flags', rim: 'stones', hsl: [0, 0, 0], blades: 2400, tall: 0.75, dots: 'daisy',
+    home: { border: 'picket', edge: 'wood', path: 'stones', patio: 'flags', rim: 'stones', hsl: [0, 0, 0], blades: 2000, tall: 0.6, dots: 'daisy',
       earth: ['#8b5e3c', '#a8774c', '#6b4630'], water: ['#2f7f99', '#7fd0dc'], greens: ['#5f9e43', '#6fae4c', '#7dba55', '#558f3c', '#86c25e'] },
-    allotment: { border: 'wire', edge: 'sleeper', path: 'bark', patio: 'slabs', rim: 'planks', hsl: [-0.02, -0.1, -0.02], blades: 1400, tall: 0.6, dots: 'clover',
+    allotment: { border: 'wire', edge: 'sleeper', path: 'bark', patio: 'slabs', rim: 'planks', hsl: [-0.02, -0.1, -0.02], blades: 1200, tall: 0.55, dots: 'clover',
       earth: ['#6e4630', '#8a5a3a', '#553522'], water: ['#36706a', '#8cc0ac'], greens: ['#6f9a45', '#7fa64e', '#8aae55', '#66903f'] },
-    meadow: { border: 'wall', edge: 'wild', path: 'mown', patio: 'flags', rim: 'boulders', hsl: [0.015, 0.02, 0.03], blades: 3200, tall: 1.05, dots: 'wild',
+    meadow: { border: 'wall', edge: 'wild', path: 'mown', patio: 'flags', rim: 'boulders', hsl: [0.015, 0.02, 0.03], blades: 2600, tall: 0.85, dots: 'wild',
       earth: ['#94714c', '#b89a6c', '#77573a'], water: ['#2a6f8f', '#8fd6d0'], greens: ['#6aa64a', '#7cb455', '#8fbf5c', '#a6c463', '#5f9a44'] },
   };
   // The bridges: each garden's neighbours, whether the bridge leaves from the back (dir -1) or the front (dir 1),
@@ -3511,17 +3511,18 @@ const GARDEN = (() => {
       const ringGeo = new THREE.RingGeometry(0.85, 1, 32); ringGeo.rotateX(-Math.PI / 2);
       for (let q = 0; q < 3; q++) { const r = new THREE.Mesh(ringGeo, own(new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, depthWrite: false }))); r.position.y = 0.036; areaG.add(r); ripples.push({ m: r, t: q * 1.3 }); }
     }
-    // Grass blades that sway in the breeze (moved on the graphics card): short lawn, rough allotment grass, or long meadow grass.
+    // Grass blades that sway in the breeze (moved on the graphics card): a neat, even lawn kept short so nothing hides in it.
     {
-      const g = new THREE.ConeGeometry(0.032, 0.18, 3, 1); g.translate(0, 0.09, 0);
+      const g = new THREE.ConeGeometry(0.026, 0.11, 3, 1); g.translate(0, 0.055, 0);
       const pts = [];
       while (pts.length < st.blades) { const x = rnd(-HALF + 0.08, HALF - 0.08), z = rnd(-HALF + 0.08, HALF - 0.08); if (typeAt(x, z) === 'grass' && !inPond(x, z, 0.25)) pts.push([x, z]); }
-      const blades = new THREE.InstancedMesh(g, bladeMat, pts.length), m = new THREE.Matrix4(), c = new THREE.Color();
-      pts.forEach(([x, z], n) => {
-        const s = rnd(0.7, 1.35); m.compose(V(x, 0, z), _q.setFromEuler(_e.set(rnd(-0.2, 0.2), rnd(TAU), rnd(-0.2, 0.2))), V(s, s * rnd(0.8, 1.3) * st.tall, s));
-        blades.setMatrixAt(n, m); blades.setColorAt(n, c.set(pick(st.greens)));
-      });
-      blades.receiveShadow = true; areaG.add(blades);
+      const blades = new THREE.InstancedMesh(g, bladeMat, pts.length), c = new THREE.Color();
+      grass = { mesh: blades, b: pts.map(([x, z], n) => {
+        blades.setColorAt(n, c.set(pick(st.greens)));
+        const s = rnd(0.85, 1.1);
+        return { x, z, s, h: s * rnd(0.9, 1.1) * st.tall, q: new THREE.Quaternion().setFromEuler(_e.set(rnd(-0.08, 0.08), rnd(TAU), rnd(-0.08, 0.08))) };
+      }) };
+      blades.receiveShadow = true; areaG.add(blades); mowGrass();
       // Tiny lawn daisies, clover in the allotment grass, or wildflowers on stems above the meadow grass.
       const k = new Kit(), spot = () => { let x, z; do { x = rnd(-HALF + 0.2, HALF - 0.2); z = rnd(-HALF + 0.2, HALF - 0.2); } while (typeAt(x, z) !== 'grass' || inPond(x, z, 0.3)); return [x, z]; };
       if (st.dots === 'wild') for (let q = 0; q < 240; q++) {
@@ -3735,16 +3736,27 @@ const GARDEN = (() => {
       addHit(g, 0.8, isTree(k) ? 1.9 : 0.7);
     }
   }
+  // Grass on a tile with something on it is mown right down, so small items never get lost in it.
+  let grass = null, mowDirty = true;
+  function mowGrass() {
+    mowDirty = false; if (!grass) return;
+    const occ = occupied(), m = new THREE.Matrix4();
+    grass.b.forEach((b, n) => {
+      const cut = occ.has(Math.floor(b.x + HALF) + ',' + Math.floor(b.z + HALF)) ? 0.25 : 1;
+      grass.mesh.setMatrixAt(n, m.compose(V(b.x, 0, b.z), b.q, V(b.s, b.h * cut, b.s)));
+    });
+    grass.mesh.instanceMatrix.needsUpdate = true;
+  }
   function makeObj(it, builtin) {
     const g = new THREE.Group();
     g.userData = builtin ? { builtin: it, k: it.k } : { item: it, k: it.k };
     fillObj(g, it);
     g.position.copy(tileTop(it.i, it.j)); g.rotation.y = FL[it.k] ? 0 : it.ry || 0;
-    scene.add(g); objs.push(g); if (!builtin) pickables.push(g); glowDirty = true;
+    scene.add(g); objs.push(g); if (!builtin) pickables.push(g); glowDirty = mowDirty = true;
     return g;
   }
   const removeFrom = (arr, x) => { const i = arr.indexOf(x); if (i >= 0) arr.splice(i, 1); };
-  function dropObj(g) { scene.remove(g); removeFrom(objs, g); removeFrom(pickables, g); glowDirty = true; }
+  function dropObj(g) { scene.remove(g); removeFrom(objs, g); removeFrom(pickables, g); glowDirty = mowDirty = true; }
   const objOf = (it) => objs.find((o) => o.userData.item === it);
   function makeGiftObj(gift) {
     const g = buildGift(), n = giftsHere().filter((x) => x.i == null).indexOf(gift);
@@ -4781,7 +4793,7 @@ const GARDEN = (() => {
     if (!valid.has(i + ',' + j)) { nudge(); return; }
     const k = tool.k ?? tool.item.k, at = tileTop(i, j);
     if (tool.type === 'move') {
-      const it = tool.item, g = objOf(it); it.i = i; it.j = j; saveSettings();
+      const it = tool.item, g = objOf(it); it.i = i; it.j = j; mowDirty = true; saveSettings();
       slideTo(g, at); sound('plant'); burst(at.clone().add(V(0, 0.1, 0)), 10, { colors: ['#7b5440', '#a8774c'], speed: 0.8, up: 1.5, size: 0.04 });
       tool = null; hideValid(); $('gd-hint').classList.remove('open'); return;
     }
@@ -5040,7 +5052,7 @@ const GARDEN = (() => {
     // Close up on the badge wall, everything nearer than the wall is clipped away so nothing stands in front of it.
     if (walling) { camera.near = Math.max(0.5, camera.position.distanceTo(controls.target) - 1.05); camera.updateProjectionMatrix(); }
     sun.target.position.copy(controls.target);
-    updateGlows(t);
+    updateGlows(t); if (mowDirty) mowGrass();
     renderer.render(scene, camera);
   }
 
