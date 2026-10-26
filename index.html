@@ -1759,6 +1759,14 @@ const DECOR = {
   lamppost: { name: 'Lamp post', a: 'An old lamp post', note: 'A tall lamp that lights up a big pool of the garden.' },
   firepit: { name: 'Fire pit', a: 'A fire pit', note: 'A crackling fire for chilly evenings.' },
   festoon: { name: 'Festoon lights', a: 'A string of festoon lights', note: 'Big round bulbs strung between two posts.' },
+  // Things that hang on the fence, the trees or the pond, so they take no space either (FIXTURES).
+  hangbaskets: { name: 'Hanging baskets', a: 'Hanging baskets', note: 'Baskets of trailing flowers on brackets along your back fence. No space needed.' },
+  bunting: { name: 'Bunting', a: 'A string of bunting', note: 'Bright flags strung along your fence, like a summer fête. No space needed.' },
+  treefeeders: { name: 'Hanging feeders', a: 'Bird feeders to hang up', note: 'Seed feeders hung from your trees and bushes, for the birds. No space needed.' },
+  climbrose: { name: 'Climbing roses', a: 'Climbing roses', note: 'Roses that scramble up the sides of your garden. No space needed.' },
+  duckhouse: { name: 'Duck house', a: 'A floating duck house', note: 'A little house on a raft, bobbing on your pond. No space needed.' },
+  windchime: { name: 'Wind chime', a: 'A wind chime', note: 'Silver chimes on a tall hook in the back corner. No space needed.' },
+  treeswing: { name: 'Tree swing', a: 'A tree swing', note: 'A wooden swing hung from a branch of your biggest tree. No space needed.' },
   // More for the garden, spread along the path so there is always something on the way.
   deckchair: { name: 'Deckchair', a: 'A stripy deckchair', note: 'Somewhere to sit in the sun.' },
   pinwheel: { name: 'Windmill', a: 'A garden windmill', note: 'It spins in the breeze.' },
@@ -1813,16 +1821,18 @@ const LEVELS = [
       { t: 'soil', x: -4.8, y: 9.4, w: 2.6, h: 1.3 }, { t: 'soil', x: 2.6, y: 11.3, w: 2.8, h: 1.3 }, { t: 'patio', x: -5.2, y: 11.2, w: 2.8, h: 1.6 }] },
 ];
 const REWARDS = [
-  [1, 'wateringcan'], [2, 'tulip'], [3, 'fairy'], [4, 'feeder'], [5, 'jarlights'], [6, 'lavender'], [8, 'daffodil'], [10, 'grow'], [12, 'pathlights'], [14, 'sunflower'], [15, 'bench'],
-  [17, 'deckchair'], [18, 'birdbath'], [20, 'pet:cat'], [22, 'rose'], [25, 'lantern'], [27, 'cornflower'], [28, 'pinwheel'], [30, 'gnome'], [33, 'area:allotment'], [35, 'foxglove'],
-  [38, 'pondlights'], [40, 'grow'], [42, 'peony'], [45, 'logpile'], [48, 'toadlamp'], [50, 'bag'], [55, 'bluebell'], [60, 'poppy'], [65, 'treelights'], [68, 'dahlia'],
-  [70, 'beehive'], [75, 'hollyhock'], [80, 'grow'], [85, 'area:meadow'], [90, 'arch'], [95, 'lamppost'], [100, 'magnolia'], [108, 'statue'], [115, 'pots'], [122, 'iris'],
-  [130, 'birdhouse'], [140, 'firepit'], [150, 'grow'], [158, 'obelisk'], [165, 'sundial'], [180, 'apple'], [190, 'swingseat'], [200, 'cherry'], [212, 'dovecote'], [225, 'fountain'],
+  [1, 'wateringcan'], [2, 'tulip'], [3, 'fairy'], [4, 'feeder'], [5, 'jarlights'], [6, 'lavender'], [8, 'daffodil'], [9, 'hangbaskets'], [10, 'grow'], [12, 'pathlights'], [14, 'sunflower'], [15, 'bench'],
+  [17, 'deckchair'], [18, 'birdbath'], [20, 'pet:cat'], [22, 'rose'], [23, 'bunting'], [25, 'lantern'], [27, 'cornflower'], [28, 'pinwheel'], [30, 'gnome'], [32, 'treefeeders'], [33, 'area:allotment'], [35, 'foxglove'],
+  [38, 'pondlights'], [40, 'grow'], [42, 'peony'], [45, 'logpile'], [48, 'toadlamp'], [50, 'bag'], [52, 'climbrose'], [55, 'bluebell'], [57, 'duckhouse'], [60, 'poppy'], [65, 'treelights'], [68, 'dahlia'],
+  [70, 'beehive'], [75, 'hollyhock'], [78, 'windchime'], [80, 'grow'], [85, 'area:meadow'], [90, 'arch'], [95, 'lamppost'], [100, 'magnolia'], [108, 'statue'], [115, 'pots'], [122, 'iris'],
+  [130, 'birdhouse'], [140, 'firepit'], [150, 'grow'], [158, 'obelisk'], [165, 'sundial'], [180, 'apple'], [190, 'swingseat'], [200, 'cherry'], [205, 'treeswing'], [212, 'dovecote'], [225, 'fountain'],
   [238, 'festoon'], [250, 'grow'], [262, 'picnic'], [275, 'wheelbarrow'], [300, 'greenhouse'], [330, 'heron'], [365, 'oak'],
 ];
 // Added on 26 Oct 2026. Anyone already past their stone gets them as presents the next time they open the garden.
 const ADDED_V2 = ['fairy', 'jarlights', 'pathlights', 'deckchair', 'pinwheel', 'pondlights', 'peony', 'toadlamp', 'treelights', 'dahlia', 'lamppost', 'statue', 'iris',
   'firepit', 'obelisk', 'swingseat', 'dovecote', 'festoon', 'picnic', 'heron'];
+// Added later on 26 Oct 2026: things that hang on the fence, the trees and the pond. Each list is handed out once (garden.addedV2 counts them).
+const ADDED = [ADDED_V2, ['hangbaskets', 'bunting', 'treefeeders', 'climbrose', 'duckhouse', 'windchime', 'treeswing']];
 // After a year's worth of sessions the path keeps going: a bag of seeds every 25 sessions.
 const BAG = 10;
 function rewardsTo(n) {
@@ -1851,15 +1861,18 @@ function landmarkInfo(m) {
   const pic = picOf(m.give);
   if (SP[m.give]) return { title: SP[m.give].many, sub: 'A new flower', text: 'Yours for good. Grow them from any of your seeds.', svg: pic || plantSVG(m.give) };
   const d = DECOR[m.give];
-  return { title: d.name, sub: FIXTURES.includes(m.give) ? 'Lights for your garden' : 'For your garden',
-    text: `${d.a} for your garden, yours for good.${FIXTURES.includes(m.give) ? '' : ' Place as many as you like, free.'} ${d.note || ''}`, svg: pic || (ART[m.give] ? svgOf(ART[m.give]) : GIFT_SVG) };
+  return { title: d.name, sub: LIGHT_FIX.includes(m.give) ? 'Lights for your garden' : 'For your garden',
+    text: `${d.a} for your garden, yours for good.${FIXTURES.includes(m.give) ? ' It goes up by itself.' : ' Place as many as you like, free.'} ${d.note || ''}`, svg: pic || (ART[m.give] ? svgOf(ART[m.give]) : GIFT_SVG) };
 }
 // The 3D picture of a flower or ornament, as it looks in the garden.
 function picOf(k) {
   try { const s = GARDEN.thumb(k); return s ? `<img src="${s}" alt="" style="width:88%;height:88%;object-fit:contain">` : ''; } catch (e) { return ''; }
 }
 // Lights that take no space: they go up along the fence, the path, the pond or the trees, and are switched on or off.
-const FIXTURES = ['fairy', 'pathlights', 'pondlights', 'treelights'];
+const LIGHT_FIX = ['fairy', 'pathlights', 'pondlights', 'treelights'];
+// And things that hang on the fence, the trees or the pond: put up or taken down the same way.
+const HANG_FIX = ['hangbaskets', 'bunting', 'treefeeders', 'climbrose', 'duckhouse', 'windchime', 'treeswing'];
+const FIXTURES = [...LIGHT_FIX, ...HANG_FIX];
 
 // ----------------------------------------------------------- garden state
 // settings.garden.items3 is what she has put in her garden, one thing per tile:
@@ -2430,9 +2443,90 @@ const GARDEN = (() => {
     k.cyl(c, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2], [th, L, th], [_ee.x, _ee.y, _ee.z]);
   }
   const BULBS = ['#ffd45a', '#ff7a6b', '#7fd0ff', '#9be86f', '#ffffff', '#f6a6e0'];
+  const BUNT = ['#e86a5a', '#f6d44a', '#5aa3a0', '#f4ecdc', '#9b7fd1', '#f6a6c8'];
   // Lights and the newer ornaments. Glowing parts are listed in LIGHTS (drawn as bulbs that light up after dark),
   // so the shapes here are only the frames, posts and pots. fix: takes no tile (FIXTURES); its model is just for its picture.
+  // Things that hang on the fence, the trees or the pond. Each is drawn at its own origin (the hook, or the ground),
+  // so the same shape makes the picture and goes up in the garden. No randomness, so they look the same each time.
+  const HANG_FL = ['#e98fb5', '#9b7fd1', '#f4ecdc', '#e86a5a', '#f6a6e0'];
+  function basketK(k, n = 0) {
+    for (let q = 0; q < 3; q++) { const a = (q / 3) * TAU; rod(k, '#3b3b3b', [0, 0, 0], [Math.cos(a) * 0.13, -0.24, Math.sin(a) * 0.13], 0.005); }
+    k.add(GEO.bowl, '#6b4a2e', [0, -0.36, 0], [0, 0, 0], [0.16, 0.22, 0.16]);
+    k.cyl('#5f9a45', [0, -0.25, 0], [0.15, 0.03, 0.15]);
+    for (let q = 0; q < 9; q++) {
+      const a = q * 2.4 + n, r = q < 3 ? 0.04 : 0.11, c = HANG_FL[(q + n) % HANG_FL.length];
+      k.ball(q % 2 ? LEAF : '#5f9a45', [Math.cos(a) * r, -0.22, Math.sin(a) * r], [0.06, 0.04, 0.06]);
+      k.ball(c, [Math.cos(a) * r, -0.19, Math.sin(a) * r], 0.032);
+    }
+    // Trailing over the edge.
+    for (let q = 0; q < 7; q++) {
+      const a = q * 0.9 + n, d = 0.08 + (q % 3) * 0.05;
+      k.ball(LEAF, [Math.cos(a) * 0.16, -0.3 - d, Math.sin(a) * 0.16], [0.03, 0.06, 0.03]);
+      k.ball(HANG_FL[(q + n + 2) % HANG_FL.length], [Math.cos(a) * 0.17, -0.32 - d * 1.3, Math.sin(a) * 0.17], 0.026);
+    }
+  }
+  function feederK(k) {
+    const G = '#4f8a5a';
+    rod(k, '#3b3b3b', [0, 0, 0], [0, -0.1, 0], 0.005);
+    k.cone(G, [0, -0.12, 0], [0.06, 0.05, 0.06]); k.cyl('#d8ecef', [0, -0.22, 0], [0.04, 0.16, 0.04]);
+    k.cyl('#c9a25a', [0, -0.25, 0], [0.034, 0.1, 0.034]);
+    k.cyl(G, [0, -0.31, 0], [0.065, 0.02, 0.065]); k.cyl(G, [0, -0.27, 0], [0.008, 0.008, 0.13], [Math.PI / 2, 0, 0]);
+  }
+  function roseK(k, h, n = 0) {
+    const C = ['#d6455a', '#f08aa0', '#f4ecdc'][n % 3];
+    for (let q = 0; q < 3; q++) rod(k, '#4f7a3a', [(q - 1) * 0.08, 0, 0], [(q - 1) * 0.18, h, 0.02], 0.01);
+    for (let q = 0; q < 11; q++) {
+      const t = (q + 1) / 12, x = Math.sin(q * 2.1 + n) * 0.2 * (0.4 + t), y = h * t;
+      k.ball(q % 2 ? LEAF : '#5f9a45', [x, y, 0.04], [0.11, 0.08, 0.05]);
+      if (q % 2 === 0 || q > 7) k.ball(C, [x + 0.04, y + 0.03, 0.09], 0.036);
+    }
+  }
+  function duckhouseK(k) {
+    const W = '#8e5f3a', P = '#5aa3a0';
+    for (let q = 0; q < 4; q++) k.box(q % 2 ? W : tint(W, 0.06), [0, 0.03, -0.2 + q * 0.13], [0.6, 0.05, 0.12]);
+    k.box('#f4ecdc', [0, 0.2, -0.04], [0.32, 0.3, 0.28]);
+    for (const s of [-1, 1]) k.box(P, [s * 0.1, 0.42, -0.04], [0.25, 0.03, 0.36], [0, 0, s * -0.7]);
+    k.box(P, [0, 0.5, -0.04], [0.04, 0.04, 0.36]);
+    k.cyl('#2f2a26', [0, 0.18, 0.105], [0.07, 0.01, 0.09], [Math.PI / 2, 0, 0]);
+    rod(k, W, [0, 0.06, 0.24], [0, 0.03, 0.42], 0.05); rod(k, tint(W, 0.1), [0, 0.08, 0.1], [0, 0.06, 0.24], 0.05);
+  }
+  function chimeK(k) {
+    const B = '#2f3a36', S = '#c9ced1';
+    k.cyl(B, [0, 0.6, 0], [0.02, 1.2, 0.02]);
+    k.add(GEO.arc, B, [0.12, 1.2, 0], [0, 0, 0], [0.12, 0.12, 0.12]);
+    rod(k, '#3b3b3b', [0.24, 1.2, 0], [0.24, 1.08, 0], 0.005);
+    k.cyl('#8e5f3a', [0.24, 1.07, 0], [0.09, 0.02, 0.09]);
+    for (let q = 0; q < 5; q++) { const a = (q / 5) * TAU, x = 0.24 + Math.cos(a) * 0.065, z = Math.sin(a) * 0.065, L = 0.14 + q * 0.035; rod(k, '#3b3b3b', [x, 1.06, z], [x, 1.03, z], 0.003); k.cyl(S, [x, 1.03 - L / 2, z], [0.011, L, 0.011]); }
+    k.cyl('#8e5f3a', [0.24, 0.95, 0], [0.035, 0.012, 0.035]); rod(k, '#3b3b3b', [0.24, 1.06, 0], [0.24, 0.82, 0], 0.003); k.box('#5aa3a0', [0.24, 0.78, 0], [0.06, 0.08, 0.008]);
+  }
+  // A swing hung from the lowest branch on the right of a tree. b: how big the tree is.
+  function swingK(k, b) {
+    const W = '#7a5233';
+    rod(k, W, [0.03, 0.62 * b, 0], [0.7 * b, 0.74 * b, 0], 0.035 * b);
+    for (const z of [-0.13, 0.13]) rod(k, '#d9c49a', [0.52 * b, 0.72 * b, z], [0.52 * b, 0.3, z], 0.007);
+    k.box('#b07a48', [0.52 * b, 0.29, 0], [0.13, 0.035, 0.32]);
+  }
   Object.assign(DC, {
+    hangbaskets: { on: [], fix: 1, make: (k) => {
+      k.box('#f4ecdc', [0, 0.45, -0.2], [0.07, 0.9, 0.07]); rod(k, '#2f3a36', [0, 0.85, -0.17], [0, 0.85, 0.12], 0.012); rod(k, '#2f3a36', [0, 0.72, -0.17], [0, 0.85, 0.05], 0.008);
+      k.push([0, 0.85, 0.1]); basketK(k); k.pop();
+    } },
+    bunting: { on: [], fix: 1, make: (k) => {
+      for (const x of [-0.45, 0.45]) k.cyl('#8a6a4a', [x, 0.4, 0], [0.025, 0.8, 0.025]);
+      for (let q = 0; q < 7; q++) { const t = (q + 0.5) / 7, x = -0.45 + 0.9 * t, y = 0.76 - Math.sin(Math.PI * t) * 0.12; k.cone(BUNT[q % BUNT.length], [x, y - 0.07, 0.01], [0.055, 0.13, 0.008], [Math.PI, 0, 0]); }
+      const pts = []; for (let q = 0; q <= 8; q++) { const t = q / 8; pts.push([-0.45 + 0.9 * t, 0.76 - Math.sin(Math.PI * t) * 0.12, 0]); }
+      pts.slice(1).forEach((p, q) => rod(k, '#f4ecdc', pts[q], p, 0.005));
+    } },
+    climbrose: { on: [], fix: 1, make: (k) => {
+      k.box('#f4ecdc', [0, 0.35, -0.08], [0.9, 0.7, 0.03]); k.push([-0.15, 0, 0]); roseK(k, 0.75, 0); k.pop(); k.push([0.2, 0, 0]); roseK(k, 0.65, 1); k.pop();
+    } },
+    treefeeders: { on: [], fix: 1, make: (k) => {
+      rod(k, '#7a5233', [-0.45, 0.85, 0], [0.45, 0.95, 0], 0.03); k.push([-0.2, 0.875, 0]); feederK(k); k.pop(); k.push([0.22, 0.92, 0]); feederK(k); k.pop();
+      k.ball(LEAF, [-0.35, 0.95, 0], [0.18, 0.1, 0.1]); k.ball('#5f9a45', [0.38, 1.02, 0], [0.16, 0.1, 0.1]);
+    } },
+    duckhouse: { on: [], fix: 1, make: (k) => { k.cyl('#5aa8c0', [0, 0.005, 0], [0.5, 0.01, 0.48]); duckhouseK(k); } },
+    windchime: { on: [], fix: 1, make: (k) => { k.push([-0.12, -0.15, 0]); chimeK(k); k.pop(); } },
+    treeswing: { on: [], fix: 1, make: (k) => { k.push([-0.25, 0, 0]); tree(k, 'oak', 'summer', 0.9); swingK(k, 0.9); k.pop(); } },
     fairy: { on: [], fix: 1, make: (k) => {
       for (const x of [-0.45, 0.45]) { k.box('#f4ecdc', [x, 0.35, 0], [0.08, 0.7, 0.08]); k.ball('#f4ecdc', [x, 0.72, 0], 0.05); }
       const pts = []; for (let q = 0; q <= 8; q++) { const t = q / 8; pts.push([-0.45 + 0.9 * t, 0.66 - Math.sin(Math.PI * t) * 0.16, 0.05]); }
@@ -3143,12 +3237,12 @@ const GARDEN = (() => {
     const g = G();
     if (!g.opened) g.opened = Object.keys({ ...SP, ...DECOR }).filter((k) => atOf(k) <= total());
     // Things added to the path later: if she is already past their stones, they are waiting for her as presents.
-    if (!g.addedV2) {
-      g.addedV2 = 1;
-      const path = state.settings.path || (state.settings.path = []), due = ADDED_V2.filter((k) => atOf(k) <= total() && !isOpen(k) && !hasGift(k));
-      ADDED_V2.forEach((k) => { if (atOf(k) <= total() && !path.includes(atOf(k))) path.push(atOf(k)); });
+    for (let v = g.addedV2 || 0; v < ADDED.length; v++) {
+      g.addedV2 = v + 1;
+      const path = state.settings.path || (state.settings.path = []), due = ADDED[v].filter((k) => atOf(k) <= total() && !isOpen(k) && !hasGift(k));
+      ADDED[v].forEach((k) => { if (atOf(k) <= total() && !path.includes(atOf(k))) path.push(atOf(k)); });
       due.forEach((k) => addGift({ type: 'unlock', k }));
-      if (due.length) g.newGifts = due.length;
+      if (due.length) g.newGifts = (g.newGifts || 0) + due.length;
       saveSettings();
     }
     if (g.moved3) return;
@@ -3547,7 +3641,7 @@ const GARDEN = (() => {
   // one more instanced mesh. So a garden full of lights is only four draw calls, and there are no real lights to slow
   // the drawing of everything else.
   const MAXB = 900, MAXP = 90, IDQ = new THREE.Quaternion();
-  let bulbs, haloS, haloB, pools, glows = [], glowDirty = true, fixG = null, dark = 0;
+  let bulbs, haloS, haloB, pools, glows = [], glowDirty = true, fixG = null, dark = 0, treeSig = '';
   const _gm = new THREE.Matrix4(), _gv = new THREE.Vector3(), _gs = new THREE.Vector3(), _gc = new THREE.Color();
   function makeGlowLayer() {
     bulbs = new THREE.InstancedMesh(BULB, new THREE.MeshBasicMaterial({ color: '#ffffff' }), MAXB);
@@ -3601,6 +3695,7 @@ const GARDEN = (() => {
   }
   // Each frame the bulbs follow whatever they are on (so they move with it), and after dark the halos and pools too.
   function updateGlows(t) {
+    if (fixG && treeSig !== treesNow()) buildFixtures();
     if (glowDirty) refreshGlows();
     const on = dark > 0; haloS.visible = haloB.visible = pools.visible = on;
     for (const g of glows) {
@@ -3632,6 +3727,97 @@ const GARDEN = (() => {
     if (fixOn('pathlights')) pathLights(k, L);
     if (fixOn('pondlights')) pondLights(k, L);
     if (k.parts.length) { const m = mesh(k.build()); m.castShadow = false; fixG.add(m); }
+    // The hanging things cast shadows, as they are bigger.
+    const h = new Kit();
+    if (fixOn('hangbaskets')) hangBaskets(h);
+    if (fixOn('bunting')) bunting(h);
+    if (fixOn('climbrose')) climbRoses(h);
+    if (fixOn('duckhouse')) duckHouse(h, L);
+    if (fixOn('windchime')) { h.push([HALF - 0.55, 0, -HALF + 0.5]); chimeK(h); h.pop(); }
+    treeSig = treeHang(h);
+    if (h.parts.length) fixG.add(mesh(h.build()));
+  }
+  // Where things hang on the trees. Rebuilt when a tree is planted, moved or taken away.
+  function hangTrees() { return objs.filter((o) => isTree(o.userData.k) || o.userData.k === 'shrub'); }
+  function treesNow() { return fixOn('treefeeders') || fixOn('treeswing') ? hangTrees().map((o) => `${o.userData.k}${o.position.x.toFixed(2)},${o.position.z.toFixed(2)},${o.rotation.y.toFixed(2)}`).join('|') : ''; }
+  function hangNote(k) {
+    const trees = hangTrees().filter((o) => isTree(o.userData.k)).length, any = hangTrees().length;
+    if (k === 'treeswing' && !trees) return 'It needs a tree to hang from, so it goes up as soon as you plant one.';
+    if (k === 'treefeeders' && !any) return 'They hang from poles by the fence until you have a tree or a bush.';
+    return { hangbaskets: 'Look along your back fence.', bunting: 'Look along your fence.', treefeeders: 'Look in your trees and bushes.', climbrose: 'Look up the sides of your garden.',
+      duckhouse: 'Look on your pond.', windchime: 'Look in the back corner.', treeswing: 'Look under your biggest tree.' }[k] || '';
+  }
+  // The fence: the back (with gaps where a bridge joins) and the two sides. H: the height of its top rail.
+  function fenceRuns() {
+    const H = { picket: 0.74, wire: 0.72, wall: 0.52 }[ST.border], bz = -HALF + 0.07, back = [], sides = [];
+    let a = -HALF + 0.15;
+    openExits().filter((e) => e.dir < 0).map((e) => tx(e.i)).sort((p, q) => p - q).forEach((g) => { back.push([[a, bz], [g - 0.65, bz]]); a = g + 0.65; });
+    back.push([[a, bz], [HALF - 0.15, bz]]);
+    const zEnd = ST.border === 'picket' ? -0.5 : HALF - 0.5;
+    for (const sx of [-1, 1]) sides.push([[sx * (HALF - 0.07), -HALF + 0.25], [sx * (HALF - 0.07), zEnd]]);
+    return { H, back: back.filter(([[x0], [x1]]) => x1 - x0 > 0.5), sides };
+  }
+  function hangBaskets(k) {
+    const { H, back } = fenceRuns(), top = ST.border === 'wall' ? 0.36 : H;
+    let n = 0;
+    back.forEach(([[x0, z], [x1]]) => {
+      const m = Math.max(1, Math.floor((x1 - x0) / 2.2));
+      for (let q = 0; q < m; q++) {
+        const x = x0 + ((q + 0.5) / m) * (x1 - x0), y = top + 0.32;
+        k.cyl('#2f3a36', [x, top + 0.17, z + 0.02], [0.02, 0.34, 0.02]);
+        rod(k, '#2f3a36', [x, y, z + 0.02], [x, y, z + 0.34], 0.012); rod(k, '#2f3a36', [x, y - 0.15, z + 0.02], [x, y, z + 0.22], 0.008);
+        k.push([x, y, z + 0.3]); basketK(k, n++); k.pop();
+      }
+    });
+  }
+  function bunting(k) {
+    const { H, back, sides } = fenceRuns(), y0 = H + 0.3;
+    let n = 0;
+    [...back, ...sides].forEach(([[x0, z0], [x1, z1]]) => {
+      const len = Math.hypot(x1 - x0, z1 - z0), spans = Math.max(1, Math.round(len / 1.5)), side = x0 === x1;
+      for (let s = 0; s <= spans; s++) { const t = s / spans; k.cyl('#8a6a4a', [x0 + (x1 - x0) * t, (y0 + 0.04) / 2, z0 + (z1 - z0) * t], [0.018, y0 + 0.04, 0.018]); }
+      for (let s = 0; s < spans; s++) {
+        const pts = [];
+        for (let q = 0; q <= 6; q++) { const t = (s + q / 6) / spans; pts.push([x0 + (x1 - x0) * t, y0 - Math.sin(Math.PI * q / 6) * 0.13, z0 + (z1 - z0) * t]); }
+        pts.slice(1).forEach((p, q) => rod(k, '#f4ecdc', pts[q], p, 0.005));
+        for (let q = 0; q < 6; q++) {
+          const a = pts[q], b = pts[q + 1], c = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 - 0.075, (a[2] + b[2]) / 2];
+          k.cone(BUNT[n++ % BUNT.length], c, side ? [0.008, 0.14, 0.06] : [0.06, 0.14, 0.008], [Math.PI, 0, 0]);
+        }
+      }
+    });
+  }
+  function climbRoses(k) {
+    const { H, sides, back } = fenceRuns(), h = H + 0.15;
+    let n = 0;
+    sides.forEach(([[x, z0], [, z1]]) => {
+      const m = Math.max(1, Math.round((z1 - z0) / 1.6));
+      for (let q = 0; q < m; q++) { k.push([x - Math.sign(x) * 0.06, 0, z0 + ((q + 0.5) / m) * (z1 - z0)], [0, Math.sign(x) * -Math.PI / 2, 0]); roseK(k, h - (q % 2) * 0.12, n++); k.pop(); }
+    });
+    // One up each back corner too.
+    back.forEach(([[x0, z], [x1]], i) => { if (i === 0) { k.push([x0 + 0.25, 0, z + 0.06]); roseK(k, h, n++); k.pop(); } if (i === back.length - 1) { k.push([x1 - 0.25, 0, z + 0.06]); roseK(k, h - 0.08, n++); k.pop(); } });
+  }
+  function duckHouse(k, L) {
+    const x = POND.x + POND.rx * 0.35, z = POND.z - POND.rz * 0.25;
+    k.push([x, 0.035, z], [0, -0.5, 0], 0.85); duckhouseK(k); k.pop();
+    L.push({ p: [x + Math.sin(-0.5) * 0.09, 0.2, z + Math.cos(-0.5) * 0.09], s: [0.02, 0.02, 0.02], c: '#ffd98a', halo: 's', pool: 0 });
+  }
+  // Feeders in every tree and bush, and the swing on the biggest tree.
+  function treeHang(k) {
+    const all = hangTrees(), trees = all.filter((o) => isTree(o.userData.k));
+    const swingOn = fixOn('treeswing') && trees.length ? trees.find((o) => o.userData.k === 'oak') || trees[0] : null;
+    const at = (o, x, y, z) => { const r = o.rotation.y, c = Math.cos(r), s = Math.sin(r); return [o.position.x + x * c + z * s, o.position.y + y, o.position.z - x * s + z * c]; };
+    if (swingOn) { const b = swingOn.userData.k === 'oak' ? 1.25 : 1; k.push([swingOn.position.x, swingOn.position.y, swingOn.position.z], [0, swingOn.rotation.y, 0]); swingK(k, b); k.pop(); }
+    if (fixOn('treefeeders')) {
+      all.forEach((o) => {
+        if (o.userData.k === 'shrub') { const p = at(o, 0.42, 0, 0.2); k.cyl('#2f3a36', [p[0], 0.35, p[2]], [0.014, 0.7, 0.014]); k.add(GEO.arc, '#2f3a36', [p[0] + 0.08, 0.7, p[2]], [0, 0, 0], 0.08); k.push([p[0] + 0.16, 0.7, p[2]]); feederK(k); k.pop(); return; }
+        const b = o.userData.k === 'oak' ? 1.25 : 1, spots = o === swingOn ? [[-0.5, 0.8, -0.1], [0, 0.85, 0.55]] : [[0.55, 0.83, 0.1], [-0.5, 0.8, -0.1]];
+        spots.forEach(([x, y, z]) => { const p = at(o, x * b, y * b, z * b); k.push(p); rod(k, '#3b3b3b', [0, 0, 0], [0, 0.06, 0], 0.004); feederK(k); k.pop(); });
+      });
+      // No trees or bushes yet: two on shepherd's crooks by the back fence.
+      if (!all.length) [-2.5, 2.5].forEach((x) => { const z = -HALF + 0.5; k.cyl('#2f3a36', [x, 0.5, z], [0.016, 1, 0.016]); k.add(GEO.arc, '#2f3a36', [x + 0.1, 1, z], [0, 0, 0], 0.1); k.push([x + 0.2, 1, z]); feederK(k); k.pop(); });
+    }
+    return treesNow();
   }
   function fairyLights(k, L) {
     const H = { picket: 0.74, wire: 0.72, wall: 0.52 }[ST.border], bz = -HALF + 0.07, runs = [];
@@ -4469,9 +4655,9 @@ const GARDEN = (() => {
     lockedNext(keys).forEach((k) => list.appendChild(itemBtn({ img: thumbOf(k), name: nameOf(k), sub: `Session ${atOf(k)}`, tag: `🌱${earlyPrice(k)}`, locked: true, onClick: () => earlyCard(k) })));
   }
   // Decorate's sections. Pet and visitor things are listed under their own, not under All.
-  const CATS = [['all', 'All'], ['lights', '💡 Lights'], ['seats', '🪑 Seats'], ['ornaments', '🏺 Ornaments'], ['wildlife', '🐦 Birds & bees'], ['trees', '🌳 Trees'], ['pets', '🐾 Pets'], ['visitors', '🦔 Visitors']];
+  const CATS = [['all', 'All'], ['lights', '💡 Lights'], ['hang', '🪴 Fence & trees'], ['seats', '🪑 Seats'], ['ornaments', '🏺 Ornaments'], ['wildlife', '🐦 Birds & bees'], ['trees', '🌳 Trees'], ['pets', '🐾 Pets'], ['visitors', '🦔 Visitors']];
   const CAT_OF = { lights: ['lantern', 'fairy', 'jarlights', 'pathlights', 'pondlights', 'toadlamp', 'treelights', 'lamppost', 'firepit', 'festoon'],
-    seats: ['bench', 'deckchair', 'swingseat', 'picnic'], wildlife: ['feeder', 'birdbath', 'birdhouse', 'dovecote', 'beehive', 'logpile'],
+    hang: HANG_FIX, seats: ['bench', 'deckchair', 'swingseat', 'picnic'], wildlife: ['feeder', 'birdbath', 'birdhouse', 'dovecote', 'beehive', 'logpile'],
     trees: ['magnolia', 'apple', 'cherry', 'oak', 'greenhouse'] };
   const catOf = (k) => (ITEM_OF[k] ? (isPet(ITEM_OF[k]) ? 'pets' : 'visitors') : Object.keys(CAT_OF).find((c) => CAT_OF[c].includes(k)) || 'ornaments');
   let decorCat = 'all';
@@ -4637,9 +4823,16 @@ const GARDEN = (() => {
       const open = Object.keys(DC).filter((k) => isOpen(k) && inCat(k) && !(decorCat === 'all' && ITEM_OF[k])).sort((a, b) => atOf(a) - atOf(b));
       $('gd-tray-sub').textContent = decorCat === 'pets' || decorCat === 'visitors' ? 'Things for your pets and visitors. They come and use them.'
         : decorCat === 'lights' ? 'They glow when it gets dark. Fairy, path, pond and tree lights need no space: tap to switch them on or off.'
+        : decorCat === 'hang' ? 'These hang on your fence, trees and pond, so they need no space. Tap to put them up or take them down.'
         : open.length ? 'Yours to place as often as you like.' : 'Your first one arrives with your first session.';
       open.forEach((k) => {
-        if (DC[k].fix) { const on = fixOn(k); list.appendChild(itemBtn({ img: thumbOf(k), name: DECOR[k].name, sub: on ? 'On' : 'Off', tag: on ? '✓' : '', onClick: () => { setFix(k, !on); sound(on ? 'tick' : 'badge'); renderTray(); toast(on ? `${DECOR[k].name} taken down` : `${DECOR[k].name} put up. They come on when it gets dark ✨`, thumbOf(k)); } })); return; }
+        if (DC[k].fix) {
+          const on = fixOn(k), lit = LIGHT_FIX.includes(k);
+          list.appendChild(itemBtn({ img: thumbOf(k), name: DECOR[k].name, sub: on ? (lit ? 'On' : 'Up') : (lit ? 'Off' : 'Down'), tag: on ? '✓' : '', onClick: () => {
+            setFix(k, !on); sound(on ? 'tick' : 'badge'); renderTray();
+            toast(on ? `${DECOR[k].name} taken down` : lit ? `${DECOR[k].name} put up. They come on when it gets dark ✨` : `${DECOR[k].name} put up. ${hangNote(k)}`, thumbOf(k));
+          } })); return;
+        }
         list.appendChild(itemBtn({ img: thumbOf(k), name: DECOR[k].name, sub: DECOR[k].special ? 'Rare find' : ITEM_OF[k] ? `For ${petOrVisitor(ITEM_OF[k])}` : 'Free', tag: DECOR[k].special ? '✨' : '', onClick: () => startTool({ type: 'decor', k }) }));
       });
       // Things for pets and visitors that she can buy, straight from here.
@@ -4855,8 +5048,11 @@ const GARDEN = (() => {
     let card;
     if (c.type === 'unlock') {
       if (!G().opened.includes(c.k)) G().opened.push(c.k);
-      if (FIXTURES.includes(c.k)) { setFix(c.k, true); if (dark) setTimeout(() => toast('Look, they are lit up already ✨'), 2600); }
-      card = FIXTURES.includes(c.k)
+      if (FIXTURES.includes(c.k)) { setFix(c.k, true); if (dark && LIGHT_FIX.includes(c.k)) setTimeout(() => toast('Look, they are lit up already ✨'), 2600); }
+      card = HANG_FIX.includes(c.k)
+        ? { img: thumbOf(c.k), kicker: c.early ? 'Early from your path!' : 'New for your garden!', title: DECOR[c.k].name,
+          text: `${DECOR[c.k].note.replace(/ No space needed\.$/, '')} ${hangNote(c.k)} Take it down or put it back up under Decorate, Fence & trees.` }
+        : FIXTURES.includes(c.k)
         ? { img: thumbOf(c.k), kicker: c.early ? 'Early from your path!' : 'Lights for your garden!', title: DECOR[c.k].name,
           text: `${DECOR[c.k].note.replace(/ No space needed\.$/, '')} They are up already and come on when it gets dark. Switch them on or off under Decorate, Lights.` }
         : SP[c.k]
