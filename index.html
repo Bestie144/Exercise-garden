@@ -513,6 +513,21 @@ body.previewing .screen .wrap > header { margin-top: 64px; }
 .wkday i { width: 100%; max-width: 34px; height: 10px; border-radius: 4px; background: var(--soft); }
 .wkday small { font-size: 0.7rem; font-weight: 700; color: var(--muted); }
 .wkday.today small { color: var(--accent); }
+.mh-nav { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 4px; margin: -4px -6px 0; }
+.mh-nav button { min-height: 44px; padding: 0; border-radius: 12px; background: transparent; font-size: 1.6rem; line-height: 1; color: var(--accent); }
+.mh-nav button:disabled { color: var(--soft); }
+.mh-nav .kicker { text-align: center; }
+.mh-mode { display: grid; grid-template-columns: 1fr 1fr; background: var(--soft); border-radius: 10px; padding: 2px; gap: 2px; }
+.mh-mode button { min-height: 34px; padding: 0; border-radius: 8px; background: transparent; font-size: 0.88rem; color: var(--muted); }
+.mh-mode button[aria-pressed="true"] { background: var(--card); color: var(--fg); box-shadow: 0 1px 4px rgb(0 0 0 / .12); }
+.mcal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.mcal > small { text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--muted); }
+.mday { display: grid; justify-items: center; gap: 3px; padding: 4px 0 5px; border-radius: 9px; background: var(--soft); font-size: 0.74rem; font-weight: 700; color: var(--muted); }
+.mday.full { background: color-mix(in srgb, var(--stem) 30%, var(--soft)); color: var(--fg); }
+.mday.today { outline: 2px solid var(--accent); outline-offset: -2px; }
+.mday.future { opacity: .45; }
+.mday span { display: grid; grid-template-columns: repeat(2, 7px); gap: 2px; }
+.mday i { width: 7px; height: 7px; border-radius: 2px; background: var(--card); }
 .wkkey { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.78rem; color: var(--muted); }
 .wkkey span { display: inline-flex; align-items: center; gap: 5px; }
 .wkkey i { width: 9px; height: 9px; border-radius: 3px; }
@@ -660,7 +675,8 @@ body.previewing .screen .wrap > header { margin-top: 64px; }
       <div class="card" style="gap:14px">
         <label class="setting"><span>Sounds<br><span class="small muted">Chimes and the countdown. Turn off the silent switch to hear them.</span></span><input type="checkbox" class="switch" id="set-sound"></label>
       </div>
-      <div class="card" style="gap:10px">
+      <!-- Hidden for go-live; remove "hidden" to bring the preview back for testing. -->
+      <div class="card" style="gap:10px" hidden>
         <span><strong>Preview the future</strong><br><span class="small muted">See your garden as if you had done more sessions. Nothing is saved, and it goes back to normal when you leave the preview.</span></span>
         <div class="previewbtns"><button class="soft" data-ahead="50">+50</button><button class="soft" data-ahead="75">+75</button><button class="soft" data-ahead="150">+150</button></div>
       </div>
@@ -672,6 +688,11 @@ body.previewing .screen .wrap > header { margin-top: 64px; }
     <div class="mepane" id="m-history" hidden>
       <div id="hist-list" class="hist"></div>
       <p class="small muted" id="hist-where"></p>
+      <div class="card" style="gap:10px" id="backup">
+        <span><strong>Backup</strong><br><span class="small muted" id="bk-when"></span></span>
+        <div class="previewbtns"><button class="soft" id="bk-save">Save a backup</button><button class="soft" id="bk-load">Restore</button></div>
+        <input type="file" id="bk-file" accept=".json,application/json" hidden>
+      </div>
     </div>
   </div>
 </section>
@@ -1154,7 +1175,9 @@ function mergeGarden(g) {
 try { const s = JSON.parse(localStorage.getItem(LS) || 'null'); if (s) { state.settings = mergeSettings(s.settings); state.sessions = (s.sessions || []).map(fixKind); if (raiseCardio(state.settings)) saveLocal(); } } catch {}
 // Early versions stored every session with kind 'session'; work out which set it was from what was done.
 function fixKind(v) { if (!SET_NAMES[v.kind]) v.kind = (v.done || []).some((d) => d.id === 'neck_stretch' || d.id === 'side_stretch') ? 'tough' : 'good'; return v; }
-function saveLocal() { if (PREVIEW) return; try { localStorage.setItem(LS, JSON.stringify({ settings: state.settings, sessions: state.sessions.slice(-400) })); } catch {} }
+function saveLocal() { if (PREVIEW) return; try { localStorage.setItem(LS, JSON.stringify({ settings: state.settings, sessions: state.sessions })); } catch {} }
+// Ask the phone to keep this app's storage rather than clear it when space runs low.
+try { navigator.storage?.persist?.(); } catch {}
 // Path rewards already reached before this version (or on another device) are not celebrated again.
 function markReachedStages() {
   let changed = false;
@@ -5319,36 +5342,81 @@ document.querySelectorAll('#m-seg button').forEach((b) => { b.onclick = () => { 
 const KIND_C = { strength: 'var(--f-good)', move: 'var(--f-move)', balance: 'var(--f-balance)', iso: 'var(--f-iso)' };
 function renderMe() {
   const n = total(), s = stats();
-  $('m-sum').textContent = n ? `${PL(n, 'session', 'sessions')} so far` : 'Your first session starts it all off';
+  const allMins = Math.round(state.sessions.reduce((a, x) => a + (x.secs || 0), 0) / 60);
+  $('m-sum').textContent = n ? `${PL(n, 'session', 'sessions')} · ${allMins} minutes so far` : 'Your first session starts it all off';
   document.querySelectorAll('#m-seg button').forEach((b) => b.setAttribute('aria-selected', b.dataset.seg === meSeg));
   ['progress', 'exercises', 'history'].forEach((k) => { $('m-' + k).hidden = k !== meSeg; });
-  renderMeHero(s);
+  renderMeHero();
   if (meSeg === 'progress') renderMeProgress(s);
   else if (meSeg === 'exercises') renderExStats(s);
   else renderHistory();
 }
-// This week: a ring for full days, three headline numbers, and a little grid of which sessions were done each day.
-function renderMeHero(s) {
+// The summary card: a week or a month at a time, with arrows to look back. A ring for full days, three numbers for
+// the period shown, and which sessions were done each day.
+let heroMode = 'week', heroBack = 0;
+const monthStart = (ms, back = 0) => { const d = new Date(ms); return new Date(d.getFullYear(), d.getMonth() - back, 1).getTime(); };
+function heroRange() {
+  if (heroMode === 'week') { const a = weekStart(Date.now()) - heroBack * 7 * DAY_MS; return [weekStart(a + 3 * 3600e3), weekStart(a + 8 * DAY_MS)]; }
+  const a = monthStart(Date.now(), heroBack); return [a, monthStart(a, -1)];
+}
+// How far back there is anything to see: the week or month of the first session.
+function heroOldest() {
+  const first = state.sessions[0]?.start ?? Date.now(), now = new Date(), f = new Date(first);
+  return heroMode === 'week' ? Math.max(0, Math.round((weekStart(Date.now()) - weekStart(first)) / (7 * DAY_MS)))
+    : Math.max(0, (now.getFullYear() - f.getFullYear()) * 12 + now.getMonth() - f.getMonth());
+}
+function heroLabel(a) {
+  if (heroMode === 'month') return heroBack === 0 ? 'This month' : heroBack === 1 ? 'Last month' : new Date(a).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  return heroBack === 0 ? 'This week' : heroBack === 1 ? 'Last week' : `Week of ${new Date(a).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+}
+function renderMeHero() {
   const box = $('m-hero'); box.innerHTML = '';
-  const ws = weekStart(Date.now()), todayK = dayKey(Date.now());
-  const secs = state.sessions.reduce((a, x) => a + (x.secs || 0), 0), weeks = new Set(state.sessions.map((x) => weekStart(x.start))).size;
+  heroBack = Math.min(heroBack, heroOldest());
+  const [a, b] = heroRange(), todayK = dayKey(Date.now()), days = [];
+  for (let d = a + 3 * 3600e3; d < b; d += DAY_MS) days.push(d);   // 3am keeps clear of clock changes
+  const list = state.sessions.filter((x) => x.start >= a && x.start < b);
+  const secs = list.reduce((t, x) => t + (x.secs || 0), 0), active = new Set(list.map((x) => dayKey(x.start))).size;
   let full = 0;
-  const grid = el('div', 'wkgrid');
-  'MTWTFSS'.split('').forEach((L, i) => {
-    const day = ws + i * DAY_MS + 3 * 3600e3, kinds = kindsOn(day), col = el('div', 'wkday' + (dayKey(day) === todayK ? ' today' : ''));
-    if (kinds.size >= DAILY) full++;
-    SNACK_ORDER.forEach((k) => { const c = el('i'); if (kinds.has(k)) c.style.background = KIND_C[k]; col.appendChild(c); });
-    col.appendChild(el('small', null, L)); grid.appendChild(col);
-  });
+  const kindsByDay = days.map((d) => { const k = kindsOn(d); if (k.size >= DAILY) full++; return k; });
+
+  const nav = el('div', 'mh-nav');
+  const older = btn('‹', null, () => { heroBack++; renderMeHero(); }), newer = btn('›', null, () => { heroBack--; renderMeHero(); });
+  older.setAttribute('aria-label', heroMode === 'week' ? 'Previous week' : 'Previous month'); older.disabled = heroBack >= heroOldest();
+  newer.setAttribute('aria-label', heroMode === 'week' ? 'Next week' : 'Next month'); newer.disabled = heroBack === 0;
+  nav.append(older, el('span', 'kicker', `${heroLabel(a)} · ${PL(full, 'full day', 'full days')}`), newer);
+
   const ring = el('div', 'ring7'), r = 30, C = 2 * Math.PI * r;
-  ring.innerHTML = `<svg viewBox="0 0 76 76" aria-hidden="true"><circle cx="38" cy="38" r="${r}" class="trk"/><circle cx="38" cy="38" r="${r}" class="val" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - full / 7)).toFixed(1)}" transform="rotate(-90 38 38)"/></svg>`;
-  ring.append(el('b', null, String(full)), el('span', null, 'of 7'));
+  ring.innerHTML = `<svg viewBox="0 0 76 76" aria-hidden="true"><circle cx="38" cy="38" r="${r}" class="trk"/><circle cx="38" cy="38" r="${r}" class="val" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - full / days.length)).toFixed(1)}" transform="rotate(-90 38 38)"/></svg>`;
+  ring.append(el('b', null, String(full)), el('span', null, `of ${days.length}`));
   const top = el('div', 'mh-top'), nums = el('div', 'mh-nums');
-  [[total(), 'sessions'], [Math.round(secs / 60), 'minutes'], [weeks, weeks === 1 ? 'week active' : 'weeks active']].forEach(([v, t]) => { const d = el('div'); d.append(el('b', null, String(v)), el('span', null, t)); nums.appendChild(d); });
+  [[list.length, list.length === 1 ? 'session' : 'sessions'], [Math.round(secs / 60), 'minutes'], [active, active === 1 ? 'day active' : 'days active']].forEach(([v, t]) => { const d = el('div'); d.append(el('b', null, String(v)), el('span', null, t)); nums.appendChild(d); });
   top.append(ring, nums);
+
+  let grid;
+  if (heroMode === 'week') {
+    grid = el('div', 'wkgrid');
+    'MTWTFSS'.split('').forEach((L, i) => {
+      const kinds = kindsByDay[i], col = el('div', 'wkday' + (dayKey(days[i]) === todayK ? ' today' : ''));
+      SNACK_ORDER.forEach((k) => { const c = el('i'); if (kinds.has(k)) c.style.background = KIND_C[k]; col.appendChild(c); });
+      col.appendChild(el('small', null, L)); grid.appendChild(col);
+    });
+  } else {
+    // A calendar: each day has a little square per session type, and full days are tinted green.
+    grid = el('div', 'mcal');
+    'MTWTFSS'.split('').forEach((L) => grid.appendChild(el('small', null, L)));
+    for (let i = (new Date(a).getDay() + 6) % 7; i > 0; i--) grid.appendChild(el('div'));
+    days.forEach((d, i) => {
+      const kinds = kindsByDay[i], c = el('div', 'mday' + (kinds.size >= DAILY ? ' full' : '') + (dayKey(d) === todayK ? ' today' : '') + (d > Date.now() ? ' future' : ''));
+      const dots = el('span');
+      SNACK_ORDER.forEach((k) => { const q = el('i'); if (kinds.has(k)) q.style.background = KIND_C[k]; dots.appendChild(q); });
+      c.append(String(new Date(d).getDate()), dots); grid.appendChild(c);
+    });
+  }
   const key = el('div', 'wkkey');
   SNACK_ORDER.forEach((k) => { const sp = el('span'); const dot = el('i'); dot.style.background = KIND_C[k]; sp.append(dot, SNACKS[k].name); key.appendChild(sp); });
-  box.append(el('span', 'kicker', `This week · ${PL(full, 'full day', 'full days')}`), top, grid, key);
+  const mode = el('div', 'mh-mode');
+  [['week', 'Week'], ['month', 'Month']].forEach(([m, t]) => { const b2 = btn(t, null, () => { heroMode = m; heroBack = 0; renderMeHero(); }); b2.setAttribute('aria-pressed', heroMode === m); mode.appendChild(b2); });
+  box.append(nav, top, grid, key, mode);
 }
 function renderMeProgress(s) {
   const kb = $('m-kinds'); kb.innerHTML = '';
@@ -5424,6 +5492,7 @@ function exSheet(id, s, all) {
 function renderHistory() {
   const box = $('hist-list'); box.innerHTML = '';
   $('hist-where').textContent = `Saved on ${state.where}.`;
+  renderBackup();
   if (!state.sessions.length) { box.appendChild(el('p', 'muted', 'No sessions yet. Your first one will appear here.')); return; }
   const thisWeek = weekStart(Date.now()), groups = new Map();
   [...state.sessions].reverse().slice(0, 120).forEach((x) => { const w = weekStart(x.start); if (!groups.has(w)) groups.set(w, []); groups.get(w).push(x); });
@@ -5441,6 +5510,45 @@ function renderHistory() {
     box.append(h, ul);
   });
 }
+// Backup: everything (sessions, levels, garden, badges) as one file she can keep in Files, email or AirDrop.
+// Restoring adds the backup's sessions to any already here, and keeps whichever settings and garden have more sessions behind them.
+function renderBackup() {
+  const t = state.settings.backedUp;
+  $('bk-when').textContent = (t ? `Last saved ${fmtDate(t)}. ` : 'Not saved yet. ') + 'Keep a copy somewhere safe, like Files or an email to yourself, in case the app is removed or the phone is changed.';
+}
+$('bk-save').onclick = async () => {
+  if (PREVIEW) return;
+  state.settings.backedUp = Date.now(); saveSettings(); renderBackup();
+  const d = new Date(), name = `exercise-garden-backup-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.json`;
+  const file = new File([JSON.stringify({ app: 'exercise-garden', v: 1, at: Date.now(), settings: state.settings, sessions: state.sessions })], name, { type: 'application/json' });
+  try { if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: 'Exercise garden backup' }); return; } } catch (e) { if (e.name === 'AbortError') return; }
+  const a = el('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+};
+$('bk-load').onclick = () => { if (!PREVIEW) $('bk-file').click(); };
+$('bk-file').onchange = async (ev) => {
+  const f = ev.target.files[0]; ev.target.value = '';
+  if (!f) return;
+  let b = null;
+  try { b = JSON.parse(await f.text()); } catch {}
+  const ic = flowerSVG('strength'), btns = el('div', 'sh-btns');
+  if (!b || b.app !== 'exercise-garden' || !Array.isArray(b.sessions)) {
+    btns.appendChild(btn('OK', 'primary', closeSheet));
+    openSheet([sheetTop(ic, 'That file is not a backup', ['Choose a file saved with “Save a backup”.']), btns]); return;
+  }
+  const have = new Set(state.sessions.map((x) => x.id)), adds = b.sessions.filter((x) => x && x.id && x.start && !have.has(x.id));
+  const lines = [`Saved ${fmtDate(b.at)} with ${PL(b.sessions.length, 'session', 'sessions')}.`,
+    adds.length ? `${PL(adds.length, 'session', 'sessions')} will be added to the ${state.sessions.length} here.` : 'Every session in it is already here.'];
+  btns.append(btn('Restore', 'primary', async () => {
+    const merged = [...state.sessions, ...adds.map(fixKind)].sort((p, q) => p.start - q.start);
+    if (b.sessions.length >= state.sessions.length && b.settings) state.settings = mergeSettings(b.settings);
+    state.sessions = merged; saveLocal();
+    if (dbCol) { try { await dbCol.doc('settings').set(structuredClone(state.settings)); } catch {} for (const x of adds) try { await dbCol.doc(x.id).set(x); } catch {} }
+    location.reload();
+  }), btn('Cancel', 'soft', closeSheet));
+  openSheet([sheetTop(ic, 'Restore this backup?', lines), btns]);
+};
+
 // What she has at home. Bottles are assumed; the rest she ticks when she has them.
 // Levels only use what is ticked, and the band exercises only come up once the band is.
 function renderKit() {
